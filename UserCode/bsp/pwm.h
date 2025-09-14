@@ -1,0 +1,38 @@
+/**
+ * @file    pwm.h
+ * @author  syhanjin
+ * @date    2025-09-10
+ * @brief   tim driver
+ */
+#ifndef PWM_H
+#define PWM_H
+
+#include "main.h"
+
+typedef struct
+{
+    TIM_HandleTypeDef* htim;
+    uint32_t channel;
+} PWM_t;
+
+static inline void PWM_Start(PWM_t* hpwm) { HAL_TIM_PWM_Start(hpwm->htim, hpwm->channel); }
+
+static inline void PWM_Stop(PWM_t* hpwm) { HAL_TIM_PWM_Stop(hpwm->htim, hpwm->channel); }
+
+static inline void PWM_SetCompare(PWM_t* hpwm, const uint32_t compare)
+{
+    if (compare <= hpwm->htim->Instance->ARR)
+        __HAL_TIM_SET_COMPARE(hpwm->htim, hpwm->channel, compare);
+}
+
+static inline void PWM_SetDutyCircle(PWM_t* hpwm, const float duty_circle)
+{
+    if (duty_circle < 0.0f)
+        PWM_SetCompare(hpwm, 0);
+    else if (duty_circle > 1.0f)
+        PWM_SetCompare(hpwm, hpwm->htim->Instance->ARR);
+    else
+        PWM_SetCompare(hpwm, hpwm->htim->Instance->ARR * duty_circle + 0.5);
+}
+
+#endif // PWM_H
