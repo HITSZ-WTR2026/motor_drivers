@@ -6,6 +6,7 @@
  *
  * 支持的电机类型和依赖
  *   - drivers/DJI.h: 大疆电机
+ *   - drivers/tb6612.h: 由 TB6612 芯片驱动的直流电机
  */
 #ifndef MOTOR_IF_H
 #define MOTOR_IF_H
@@ -16,9 +17,14 @@
 #include "libs/pid_motor.h"
 
 #define USE_DJI
+#define USE_TB6612
 
 #ifdef USE_DJI
 #include "drivers/DJI.h"
+#endif
+
+#ifdef USE_TB6612
+#include "drivers/tb6612.h"
 #endif
 
 
@@ -26,6 +32,9 @@ typedef enum
 {
 #ifdef USE_DJI
     MOTOR_TYPE_DJI, //< 大疆电机，依赖 drivers/DJI.h
+#endif
+#ifdef USE_TB6612
+    MOTOR_TYPE_TB6612,
 #endif
 } MotorType_t;
 
@@ -130,20 +139,14 @@ static inline bool Motor_PosCtrl_IsSettle(Motor_PosCtrl_t* hctrl)
  * @param hctrl 受控对象
  * @param ref 目标值 (unit: deg)
  */
-static inline void Motor_PosCtrl_SetRef(Motor_PosCtrl_t* hctrl, const float ref)
-{
-    hctrl->position_pid.ref = ref;
-}
+static inline void Motor_PosCtrl_SetRef(Motor_PosCtrl_t* hctrl, const float ref) { hctrl->position_pid.ref = ref; }
 
 /**
  * 设置速度环目标值
  * @param hctrl 受控对象
  * @param ref 目标值 (unit: rpm)
  */
-static inline void Motor_VelCtrl_SetRef(Motor_VelCtrl_t* hctrl, const float ref)
-{
-    hctrl->pid.ref = ref;
-}
+static inline void Motor_VelCtrl_SetRef(Motor_VelCtrl_t* hctrl, const float ref) { hctrl->pid.ref = ref; }
 
 /* 电机反馈量 */
 
@@ -160,6 +163,10 @@ static inline float Motor_GetAngle(const MotorType_t motor_type, void* hmotor)
 #ifdef USE_DJI
     case MOTOR_TYPE_DJI:
         return __DJI_GET_ANGLE(hmotor);
+#endif
+#ifdef USE_TB6612
+    case MOTOR_TYPE_TB6612:
+        return __TB6612_GET_ANGLE(hmotor);
 #endif
     default:
         return 0.0f;
@@ -179,6 +186,10 @@ static inline float Motor_GetVelocity(const MotorType_t motor_type, void* hmotor
 #ifdef USE_DJI
     case MOTOR_TYPE_DJI:
         return __DJI_GET_VELOCITY(hmotor);
+#endif
+#ifdef USE_TB6612
+    case MOTOR_TYPE_TB6612:
+        return __TB6612_GET_VELOCITY(hmotor);
 #endif
     default:
         return 0.0f;

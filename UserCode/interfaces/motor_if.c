@@ -23,6 +23,10 @@ static inline void set_output(const MotorType_t motor_type, void* hmotor, float 
         __DJI_SET_IQ_CMD(hmotor, output);
         break;
 #endif
+#ifdef USE_TB6612
+    case MOTOR_TYPE_TB6612:
+        return TB6612_SetSpeed(hmotor, output);
+#endif
     default:
         break;
     }
