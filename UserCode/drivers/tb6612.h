@@ -8,7 +8,7 @@
 #define TB6612_H
 #include <stdbool.h>
 
-#define __TB6612_VERSION__ "0.1.0"
+#define __TB6612_VERSION__ "0.2.0"
 
 #include "bsp/gpio_driver.h"
 #include "bsp/pwm.h"
