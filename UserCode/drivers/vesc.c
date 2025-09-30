@@ -239,19 +239,28 @@ void VESC_SendSetCmd(VESC_t* hvesc, const VESC_CAN_PocketSet_t pocket_id, const 
  */
 void VESC_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan)
 {
+    CAN_RxHeaderTypeDef header;
+    uint8_t data[8];
+    if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &header, data) != HAL_OK)
+    {
+        return;
+    }
+    VESC_CAN_BaseReceiveCallback(hcan, &header, data);
+}
+
+/**
+ * CAN 基本接收回调函数
+ * @param hcan
+ */
+void VESC_CAN_BaseReceiveCallback(CAN_HandleTypeDef* hcan, CAN_RxHeaderTypeDef* header, uint8_t data[])
+{
     for (int i = 0; i < map_size; i++)
     {
         if (hcan == map[i].hcan)
         {
-            CAN_RxHeaderTypeDef header;
-            uint8_t data[8];
-            if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &header, data) != HAL_OK)
-            {
-                return;
-            }
-            VESC_t* hvesc = getVESCHandle(map[i].motors, &header);
+            VESC_t* hvesc = getVESCHandle(map[i].motors, header);
             if (hvesc != NULL)
-                VESC_CAN_DataDecode(hvesc, header.ExtId >> 8, data);
+                VESC_CAN_DataDecode(hvesc, header->ExtId >> 8, data);
             return;
         }
     }

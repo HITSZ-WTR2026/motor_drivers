@@ -175,23 +175,14 @@ void DJI_CAN_FilterInit(CAN_HandleTypeDef* hcan, const uint32_t filter_bank)
  */
 void DJI_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan)
 {
-    for (int i = 0; i < map_size; i++)
+    CAN_RxHeaderTypeDef header;
+    uint8_t data[8];
+    if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &header, data) != HAL_OK)
     {
-        if (hcan->Instance == map[i].can)
-        {
-            CAN_RxHeaderTypeDef header;
-            uint8_t data[8];
-            if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &header, data) != HAL_OK)
-            {
-                DJI_ERROR_HANDLER();
-                return;
-            }
-            DJI_t* hdji = getDJIHandle(map[i].motors, &header);
-            if (hdji != NULL)
-                DJI_DataDecode(hdji, data);
-            return;
-        }
+        DJI_ERROR_HANDLER();
+        return;
     }
+    DJI_CAN_BaseReceiveCallback(hcan, &header, data);
 }
 
 /**
@@ -201,18 +192,28 @@ void DJI_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan)
  */
 void DJI_CAN_Fifo1ReceiveCallback(CAN_HandleTypeDef* hcan)
 {
+
+    CAN_RxHeaderTypeDef header;
+    uint8_t data[8];
+    if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &header, data) != HAL_OK)
+    {
+        DJI_ERROR_HANDLER();
+        return;
+    }
+    DJI_CAN_BaseReceiveCallback(hcan, &header, data);
+}
+
+/**
+ * CAN 基本接收回调函数
+ * @param hcan
+ */
+void DJI_CAN_BaseReceiveCallback(CAN_HandleTypeDef* hcan, CAN_RxHeaderTypeDef* header, uint8_t data[])
+{
     for (int i = 0; i < map_size; i++)
     {
         if (hcan->Instance == map[i].can)
         {
-            CAN_RxHeaderTypeDef header;
-            uint8_t data[8];
-            if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &header, data) != HAL_OK)
-            {
-                DJI_ERROR_HANDLER();
-                return;
-            }
-            DJI_t* hdji = getDJIHandle(map[i].motors, &header);
+            DJI_t* hdji = getDJIHandle(map[i].motors, header);
             if (hdji != NULL)
                 DJI_DataDecode(hdji, data);
             return;

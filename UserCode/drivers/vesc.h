@@ -184,4 +184,5 @@ void VESC_Init(VESC_t* hvesc, VESC_Config_t config);
 HAL_StatusTypeDef VESC_CAN_FilterInit(CAN_HandleTypeDef* hcan, uint32_t filter_bank);
 void VESC_SendSetCmd(VESC_t* hvesc, VESC_CAN_PocketSet_t pocket_id, float value);
 void VESC_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);
+void VESC_CAN_BaseReceiveCallback(CAN_HandleTypeDef* hcan, CAN_RxHeaderTypeDef* header, uint8_t data[]);
 #endif // VESC_H

@@ -101,6 +101,7 @@ void DJI_CAN_FilterInit(CAN_HandleTypeDef* hcan, uint32_t filter_bank);
 
 void DJI_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);
 void DJI_CAN_Fifo1ReceiveCallback(CAN_HandleTypeDef* hcan);
+void DJI_CAN_BaseReceiveCallback(CAN_HandleTypeDef* hcan, CAN_RxHeaderTypeDef* header, uint8_t data[]);
 
 void DJI_SendSetIqCommand(CAN_HandleTypeDef* hcan, DJI_IqSetCmdGroup_t cmd_group);
 
