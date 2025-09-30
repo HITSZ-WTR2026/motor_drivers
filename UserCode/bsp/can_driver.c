@@ -8,8 +8,6 @@
 
 #ifdef USE_RTOS
 #include "cmsis_os2.h"
-#include "portmacro.h"
-#include "task.h"
 #else
 #include "cmsis_compiler.h"
 #endif
@@ -45,12 +43,12 @@ uint32_t CAN_SendMessage(CAN_HandleTypeDef* hcan, const CAN_TxHeaderTypeDef head
     else
 #ifdef USE_RTOS
     { // 任务中调用需要加临界保护
-        taskENTER_CRITICAL();
+        osKernelLock();
         if (HAL_CAN_AddTxMessage(hcan, &header, data, &mailbox) != HAL_OK)
         {
             CAN_ERROR_HANDLER();
         }
-        taskEXIT_CRITICAL();
+        osKernelUnlock();
     }
 #else
     {
