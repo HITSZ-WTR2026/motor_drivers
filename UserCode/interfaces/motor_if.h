@@ -18,6 +18,7 @@
 
 #define USE_DJI
 #define USE_TB6612
+#define USE_VESC
 
 #ifdef USE_DJI
 #include "drivers/DJI.h"
@@ -25,6 +26,10 @@
 
 #ifdef USE_TB6612
 #include "drivers/tb6612.h"
+#endif
+
+#ifdef USE_VESC
+#include "drivers/vesc.h"
 #endif
 
 
@@ -35,6 +40,9 @@ typedef enum
 #endif
 #ifdef USE_TB6612
     MOTOR_TYPE_TB6612,
+#endif
+#ifdef USE_VESC
+    MOTOR_TYPE_VESC,
 #endif
 } MotorType_t;
 
@@ -151,6 +159,13 @@ static inline void Motor_PosCtrl_SetRef(Motor_PosCtrl_t* hctrl, const float ref)
 static inline void Motor_VelCtrl_SetRef(Motor_VelCtrl_t* hctrl, const float ref)
 {
     hctrl->velocity = ref;
+#ifdef USE_VESC
+    if (hctrl->motor_type == MOTOR_TYPE_VESC)
+    {
+        // 因为 VESC 的发送频率不会很高（节约 CAN 总线），所以 SetRef 时就进行一次发送
+        Motor_VelCtrlUpdate(hctrl);
+    }
+#endif
 }
 
 /* 电机反馈量 */
@@ -172,6 +187,11 @@ static inline float Motor_GetAngle(const MotorType_t motor_type, void* hmotor)
 #ifdef USE_TB6612
     case MOTOR_TYPE_TB6612:
         return __TB6612_GET_ANGLE(hmotor);
+#endif
+#ifdef USE_VESC
+    case MOTOR_TYPE_VESC:
+        // vesc 电调并不支持相对旋转角度，只支持获取当前电机所在的角度
+        return ((VESC_t*)hmotor)->feedback.pos;
 #endif
     default:
         return 0.0f;
@@ -195,6 +215,10 @@ static inline float Motor_GetVelocity(const MotorType_t motor_type, void* hmotor
 #ifdef USE_TB6612
     case MOTOR_TYPE_TB6612:
         return __TB6612_GET_VELOCITY(hmotor);
+#endif
+#ifdef USE_VESC
+    case MOTOR_TYPE_VESC:
+        return ((VESC_t*)hmotor)->rpm;
 #endif
     default:
         return 0.0f;

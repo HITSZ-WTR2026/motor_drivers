@@ -40,6 +40,15 @@ static inline void set_output(const MotorType_t motor_type, void* hmotor, float 
  */
 void Motor_PosCtrl_Init(Motor_PosCtrl_t* hctrl, const Motor_PosCtrlConfig_t config)
 {
+    /* VESC 电调不能用于位置环控制 */
+#ifdef USE_VESC
+    if (config.motor_type == MOTOR_TYPE_VESC)
+    {
+        hctrl->enable     = false;
+        hctrl->motor_type = MOTOR_TYPE_VESC;
+        return;
+    }
+#endif
     hctrl->motor_type = config.motor_type;
     hctrl->motor      = config.motor;
     MotorPID_Init(&hctrl->velocity_pid, config.velocity_pid);
@@ -64,8 +73,15 @@ void Motor_VelCtrl_Init(Motor_VelCtrl_t* hctrl, const Motor_VelCtrlConfig_t conf
 {
     hctrl->motor_type = config.motor_type;
     hctrl->motor      = config.motor;
+    hctrl->enable     = true;
+
+    /* VESC 电调忽略 PID 配置*/
+#ifdef USE_VESC
+    if (config.motor_type == MOTOR_TYPE_VESC)
+        return;
+#endif
+
     MotorPID_Init(&hctrl->pid, config.pid);
-    hctrl->enable = true;
 }
 
 /**
@@ -76,6 +92,12 @@ void Motor_PosCtrlUpdate(Motor_PosCtrl_t* hctrl)
 {
     if (!hctrl->enable)
         return;
+
+    /* 本驱动不设计支持 VESC 的位置环控制功能 */
+#ifdef USE_VESC
+    if (hctrl->motor_type == MOTOR_TYPE_VESC)
+        return;
+#endif
 
     ++hctrl->count;
 
@@ -111,6 +133,18 @@ void Motor_VelCtrlUpdate(Motor_VelCtrl_t* hctrl)
 {
     if (!hctrl->enable)
         return;
+
+    /**
+     * VESC 电调的 PID 控制由他自己完成，我们只需要发送控制指令
+     * 控制指令频率不小于 5Hz
+     */
+#ifdef USE_VESC
+    if (hctrl->motor_type == MOTOR_TYPE_VESC)
+    {
+        VESC_SendSetCmd(hctrl->motor, VESC_CAN_SET_RPM, hctrl->velocity);
+        return;
+    }
+#endif
 
     hctrl->pid.ref = hctrl->velocity;
     hctrl->pid.fdb = Motor_GetVelocity(hctrl->motor_type, hctrl->motor);
