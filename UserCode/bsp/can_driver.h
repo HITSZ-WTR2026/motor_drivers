@@ -12,8 +12,18 @@
 #include "main.h"
 
 #define CAN_ERROR_HANDLER() Error_Handler()
+#define CAN_SEND_FAILED     (0xFFFF)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 uint32_t CAN_SendMessage(CAN_HandleTypeDef* hcan, CAN_TxHeaderTypeDef header, uint8_t data[]);
 void CAN_Start(CAN_HandleTypeDef* hcan, uint32_t ActiveITs);
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif // CAN_H
