@@ -50,6 +50,7 @@ typedef struct
     MotorPID_t position_pid;     //< 外环，位置环
     uint32_t pos_vel_freq_ratio; //< 内外环频率比
     uint32_t count;              //< 计数
+    float position;              //< 当前控制的位置
 
     struct
     {
@@ -84,6 +85,7 @@ typedef struct
     MotorType_t motor_type; //< 受控电机类型
     void* motor;            //< 受控电机
     MotorPID_t pid;         //< 速度环
+    float velocity;         //< 当前控制的速度
 } Motor_VelCtrl_t;
 
 /**
@@ -98,8 +100,8 @@ typedef struct
 
 void Motor_PosCtrl_Init(Motor_PosCtrl_t* hctrl, Motor_PosCtrlConfig_t config);
 void Motor_VelCtrl_Init(Motor_VelCtrl_t* hctrl, Motor_VelCtrlConfig_t config);
-void Motor_PosCtrlCalculate(Motor_PosCtrl_t* hctrl);
-void Motor_VelCtrlCalculate(Motor_VelCtrl_t* hctrl);
+void Motor_PosCtrlUpdate(Motor_PosCtrl_t* hctrl);
+void Motor_VelCtrlUpdate(Motor_VelCtrl_t* hctrl);
 
 /**
  * 启用电机控制
@@ -139,14 +141,17 @@ static inline bool Motor_PosCtrl_IsSettle(Motor_PosCtrl_t* hctrl)
  * @param hctrl 受控对象
  * @param ref 目标值 (unit: deg)
  */
-static inline void Motor_PosCtrl_SetRef(Motor_PosCtrl_t* hctrl, const float ref) { hctrl->position_pid.ref = ref; }
+static inline void Motor_PosCtrl_SetRef(Motor_PosCtrl_t* hctrl, const float ref) { hctrl->position = ref; }
 
 /**
  * 设置速度环目标值
  * @param hctrl 受控对象
  * @param ref 目标值 (unit: rpm)
  */
-static inline void Motor_VelCtrl_SetRef(Motor_VelCtrl_t* hctrl, const float ref) { hctrl->pid.ref = ref; }
+static inline void Motor_VelCtrl_SetRef(Motor_VelCtrl_t* hctrl, const float ref)
+{
+    hctrl->velocity = ref;
+}
 
 /* 电机反馈量 */
 

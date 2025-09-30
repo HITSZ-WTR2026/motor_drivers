@@ -38,8 +38,8 @@ void TIM_Callback(TIM_HandleTypeDef* htim)
      * 对于 TB6612 电机，PID 计算的过程中已经完成了 PWM 占空比设置
      * 故无须单独调用发送函数
      */
-    Motor_PosCtrlCalculate(&pos_ctrl);
-    Motor_VelCtrlCalculate(&vel_ctrl);
+    Motor_PosCtrlUpdate(&pos_ctrl);
+    Motor_VelCtrlUpdate(&vel_ctrl);
 }
 
 void TB6612_Control_Init()

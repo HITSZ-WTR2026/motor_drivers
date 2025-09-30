@@ -39,8 +39,8 @@ void TIM_Callback(TIM_HandleTypeDef* htim)
      *
      * 只有被启用 (hctrl->enable == true) 的控制实例才会执行计算
      */
-    Motor_PosCtrlCalculate(&pos_dji);
-    Motor_VelCtrlCalculate(&vel_dji);
+    Motor_PosCtrlUpdate(&pos_dji);
+    Motor_VelCtrlUpdate(&vel_dji);
 
     /**
      * 发送控制信号

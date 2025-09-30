@@ -72,7 +72,7 @@ void Motor_VelCtrl_Init(Motor_VelCtrl_t* hctrl, const Motor_VelCtrlConfig_t conf
  * 位置环控制计算
  * @param hctrl 受控对象
  */
-void Motor_PosCtrlCalculate(Motor_PosCtrl_t* hctrl)
+void Motor_PosCtrlUpdate(Motor_PosCtrl_t* hctrl)
 {
     if (!hctrl->enable)
         return;
@@ -89,6 +89,7 @@ void Motor_PosCtrlCalculate(Motor_PosCtrl_t* hctrl)
 
     if (hctrl->count == hctrl->pos_vel_freq_ratio)
     {
+        hctrl->position_pid.ref = hctrl->position;
         // 反馈为当前电机输出角度
         hctrl->position_pid.fdb = angle;
         MotorPID_Calculate(&hctrl->position_pid);
@@ -106,11 +107,12 @@ void Motor_PosCtrlCalculate(Motor_PosCtrl_t* hctrl)
  * 速度环控制计算
  * @param hctrl 受控对象
  */
-void Motor_VelCtrlCalculate(Motor_VelCtrl_t* hctrl)
+void Motor_VelCtrlUpdate(Motor_VelCtrl_t* hctrl)
 {
     if (!hctrl->enable)
         return;
 
+    hctrl->pid.ref = hctrl->velocity;
     hctrl->pid.fdb = Motor_GetVelocity(hctrl->motor_type, hctrl->motor);
     MotorPID_Calculate(&hctrl->pid);
 
