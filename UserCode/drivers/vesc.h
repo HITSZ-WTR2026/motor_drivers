@@ -175,7 +175,7 @@ typedef struct
         int32_t round_cnt; ///< 圈数统计
     } feedback;
 
-    float rpm;
+    float velocity;
     float abs_angle;
 } VESC_t;
 
@@ -192,6 +192,9 @@ typedef struct
     CAN_HandleTypeDef* hcan;
     VESC_t* motors[VESC_NUM];
 } VESC_FeedbackMap;
+
+#define __VESC_GET_ANGLE(__VESC_HANDLE__)    (((VESC_t*)(__VESC_HANDLE__))->abs_angle)
+#define __VESC_GET_VELOCITY(__VESC_HANDLE__) (((VESC_t*)(__VESC_HANDLE__))->velocity)
 
 void VESC_Init(VESC_t* hvesc, VESC_Config_t config);
 HAL_StatusTypeDef VESC_CAN_FilterInit(CAN_HandleTypeDef* hcan, uint32_t filter_bank);

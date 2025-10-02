@@ -7,7 +7,6 @@
 
 #include <string.h>
 #include "bsp/can_driver.h"
-#include "libs/printf.h"
 #include "main.h"
 
 static VESC_FeedbackMap map[VESC_CAN_NUM];
@@ -15,7 +14,7 @@ static size_t map_size = 0;
 
 static inline int to_map_id(const int id) { return id - VESC_ID_OFFSET; }
 
-static inline VESC_t* getVESCHandle(VESC_t* motors[VESC_NUM], const CAN_RxHeaderTypeDef* header)
+static inline VESC_t* get_vesc_handle(VESC_t* motors[VESC_NUM], const CAN_RxHeaderTypeDef* header)
 {
     if (header->IDE != CAN_ID_EXT)
         return NULL;
@@ -143,13 +142,15 @@ static int16_t be_to_i16(const uint8_t* bytes) { return (int16_t)((uint16_t)byte
  */
 void VESC_CAN_DataDecode(VESC_t* hvesc, const VESC_CAN_PocketStatus_t pocket_id, const uint8_t data[8])
 {
+    ++hvesc->feedback_count;
+
     switch (pocket_id)
     {
     case VESC_CAN_STATUS:
         hvesc->feedback.erpm          = (float)be_to_i32(data + 0);
         hvesc->feedback.current_motor = (float)be_to_i16(data + 4) / 10.0f;
         hvesc->feedback.duty          = (float)be_to_i16(data + 6) / 1000.0f;
-        hvesc->rpm                    = hvesc->feedback.erpm / (float)hvesc->electrodes;
+        hvesc->velocity               = hvesc->feedback.erpm / (float)hvesc->electrodes;
         break;
     case VESC_CAN_STATUS_2:
         hvesc->feedback.amp_hours         = (float)be_to_i32(data + 0) / 10000.0f;
@@ -280,7 +281,7 @@ void VESC_CAN_BaseReceiveCallback(CAN_HandleTypeDef* hcan, CAN_RxHeaderTypeDef* 
     {
         if (hcan == map[i].hcan)
         {
-            VESC_t* hvesc = getVESCHandle(map[i].motors, header);
+            VESC_t* hvesc = get_vesc_handle(map[i].motors, header);
             if (hvesc != NULL)
                 VESC_CAN_DataDecode(hvesc, header->ExtId >> 8, data);
             return;

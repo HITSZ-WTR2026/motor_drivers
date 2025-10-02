@@ -162,7 +162,7 @@ static inline void Motor_VelCtrl_SetRef(Motor_VelCtrl_t* hctrl, const float ref)
 #ifdef USE_VESC
     if (hctrl->motor_type == MOTOR_TYPE_VESC)
     {
-        // 因为 VESC 的发送频率不会很高（节约 CAN 总线），所以 SetRef 时就进行一次发送
+        // 在纯速度控制下 VESC 的发送频率可能不会很高（节约 CAN 总线），所以 SetRef 时就进行一次发送
         Motor_VelCtrlUpdate(hctrl);
     }
 #endif
@@ -190,8 +190,7 @@ static inline float Motor_GetAngle(const MotorType_t motor_type, void* hmotor)
 #endif
 #ifdef USE_VESC
     case MOTOR_TYPE_VESC:
-        // vesc 电调并不支持相对旋转角度，只支持获取当前电机所在的角度
-        return ((VESC_t*)hmotor)->feedback.pos;
+        return __VESC_GET_ANGLE(hmotor);
 #endif
     default:
         return 0.0f;
@@ -218,7 +217,7 @@ static inline float Motor_GetVelocity(const MotorType_t motor_type, void* hmotor
 #endif
 #ifdef USE_VESC
     case MOTOR_TYPE_VESC:
-        return ((VESC_t*)hmotor)->rpm;
+        return __VESC_GET_VELOCITY(hmotor);
 #endif
     default:
         return 0.0f;
