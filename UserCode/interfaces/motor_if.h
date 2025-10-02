@@ -7,11 +7,12 @@
  * 支持的电机类型和依赖
  *   - drivers/DJI.h: 大疆电机
  *   - drivers/tb6612.h: 由 TB6612 芯片驱动的直流电机
+ *   - drivers/vesc.h: VESC 电调驱动的电机
  */
 #ifndef MOTOR_IF_H
 #define MOTOR_IF_H
 
-#define __MOTOR_IF_VERSION__ "0.1.3"
+#define __MOTOR_IF_VERSION__ "0.2.0"
 
 #include <stdbool.h>
 #include "libs/pid_motor.h"
