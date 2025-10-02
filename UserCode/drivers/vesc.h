@@ -9,6 +9,9 @@
 #ifndef VESC_H
 #define VESC_H
 
+#include <stdbool.h>
+
+
 #include "main.h"
 
 #ifndef VESC_CAN_NUM
@@ -141,9 +144,15 @@ typedef enum
 
 typedef struct
 {
+    bool enable;    // 是否启用
+    bool auto_zero; // 是否自动判断零点
+
     CAN_HandleTypeDef* hcan;
     uint8_t id;         ///< 控制器 id，0xFF 代表广播
     uint8_t electrodes; ///< 电极数
+    float angle_zero;   ///< 零点角度
+
+    uint32_t feedback_count; ///< 反馈数
     struct
     {
         float erpm;          ///< 电转速
@@ -162,13 +171,17 @@ typedef struct
 
         float vin; ///< 输入电压
         float tachometer_value;
+
+        int32_t round_cnt; ///< 圈数统计
     } feedback;
 
     float rpm;
+    float abs_angle;
 } VESC_t;
 
 typedef struct
 {
+    bool auto_zero; ///< 自动重置零点
     CAN_HandleTypeDef* hcan;
     uint8_t id;         ///< 控制器 id，0xFF 代表广播
     uint8_t electrodes; ///< 电极数
@@ -182,6 +195,7 @@ typedef struct
 
 void VESC_Init(VESC_t* hvesc, VESC_Config_t config);
 HAL_StatusTypeDef VESC_CAN_FilterInit(CAN_HandleTypeDef* hcan, uint32_t filter_bank);
+void VESC_ResetAngle(VESC_t* hvesc);
 void VESC_SendSetCmd(VESC_t* hvesc, VESC_CAN_PocketSet_t pocket_id, float value);
 void VESC_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);
 void VESC_CAN_BaseReceiveCallback(CAN_HandleTypeDef* hcan, CAN_RxHeaderTypeDef* header, uint8_t data[]);

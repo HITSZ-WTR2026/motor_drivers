@@ -163,7 +163,14 @@ void VESC_CAN_DataDecode(VESC_t* hvesc, const VESC_CAN_PocketStatus_t pocket_id,
         hvesc->feedback.mos_temperature   = (float)be_to_i16(data + 0) / 10.0f;
         hvesc->feedback.motor_temperature = (float)be_to_i16(data + 2) / 10.0f;
         hvesc->feedback.current_in        = (float)be_to_i16(data + 4) / 10.0f;
-        hvesc->feedback.pos               = (float)be_to_i16(data + 6) / 50.0f;
+        const float new_pos               = (float)be_to_i16(data + 6) / 50.0f;
+        // 统计旋转圈数，反馈频率必须 > 转速(rpm) / 30
+        if (new_pos < 90 && hvesc->feedback.pos > 270)
+            hvesc->feedback.round_cnt++;
+        if (new_pos > 270 && hvesc->feedback.pos < 90)
+            hvesc->feedback.round_cnt--;
+        hvesc->feedback.pos = new_pos;
+        hvesc->abs_angle    = (float)hvesc->feedback.round_cnt * 360.0f + hvesc->feedback.pos - hvesc->angle_zero;
         break;
     case VESC_CAN_STATUS_5:
         hvesc->feedback.tachometer_value = (float)be_to_i32(data + 0);
@@ -172,6 +179,19 @@ void VESC_CAN_DataDecode(VESC_t* hvesc, const VESC_CAN_PocketStatus_t pocket_id,
     default: // 其他数据乱入
         return;
     }
+    if (hvesc->feedback_count == 50 && hvesc->auto_zero) // 第 50 次反馈时清零角度
+        VESC_ResetAngle(hvesc);
+}
+
+/**
+ * 清零 VESC 输出角度
+ * @param hvesc vesc handle
+ */
+void VESC_ResetAngle(VESC_t* hvesc)
+{
+    hvesc->feedback.round_cnt = 0;
+    hvesc->angle_zero         = hvesc->feedback.pos;
+    hvesc->abs_angle          = 0;
 }
 
 /**
@@ -186,6 +206,8 @@ void VESC_Init(VESC_t* hvesc, const VESC_Config_t config)
     hvesc->hcan       = config.hcan;
     hvesc->id         = config.id;
     hvesc->electrodes = config.electrodes;
+    hvesc->enable     = true;
+    hvesc->auto_zero  = config.auto_zero;
 
     VESC_t** mapped_motors = NULL;
     for (int i = 0; i < map_size; i++)
