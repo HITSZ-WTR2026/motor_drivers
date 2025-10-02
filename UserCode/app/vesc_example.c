@@ -22,6 +22,11 @@ VESC_t vesc;
  */
 Motor_VelCtrl_t vel_ctrl;
 
+/**
+ * 位置环控制实例
+ */
+Motor_PosCtrl_t pos_ctrl;
+
 uint32_t prescaler = 0;
 
 /**
@@ -40,6 +45,7 @@ void TIM_Callback(TIM_HandleTypeDef* htim)
          */
         Motor_VelCtrlUpdate(&vel_ctrl);
     }
+    Motor_PosCtrlUpdate(&pos_ctrl);
 }
 
 void VESC_Control_Init()
@@ -84,11 +90,33 @@ void VESC_Control_Init()
 
     /**
      * Step4: 初始化电机控制实例
+     *
+     * VESC 的速度环由其本身完成，位置环由于多圈控制问题，由驱动完成，所以速度环控制不需要 PID 参数，
+     * 位置环控制只需要第三环参数。
      */
     Motor_VelCtrl_Init(&vel_ctrl, (Motor_VelCtrlConfig_t){
                                       .motor_type = MOTOR_TYPE_VESC,
                                       .motor      = &vesc,
                                   });
+    Motor_PosCtrl_Init(&pos_ctrl, (Motor_PosCtrlConfig_t){.motor_type   = MOTOR_TYPE_VESC,
+                                                          .motor        = &vesc,
+                                                          .position_pid = (MotorPID_Config_t){
+                                                              .Kp             = 2.000f,
+                                                              .Ki             = 0.0015f,
+                                                              .Kd             = 1.200f,
+                                                              .abs_output_max = 2000,
+                                                          }});
+
+
+    /**
+     * Step5(可选): 启用或禁用控制实例
+     *
+     * 控制实例在初始化时默认是启动的，所以大部分情况此步可以省略。
+     * 但是在有多个控制实例的情况下，必须仅保持一个控制实例开启
+     */
+    __MOTOR_CTRL_DISABLE(&vel_ctrl);
+    __MOTOR_CTRL_ENABLE(&pos_ctrl);
+
     /**
      * Step6: 注册定时器回调并开启定时器
      *
