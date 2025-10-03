@@ -6,15 +6,23 @@
  */
 #include "can_driver.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef USE_RTOS
 #include "cmsis_os2.h"
+static osMutexId_t can_mutex = NULL;
+static osMutexId_t get_can_mutex()
+{
+    if (can_mutex == NULL)
+        can_mutex = osMutexNew(&(osMutexAttr_t){.name = "can_mutex"});
+    return can_mutex;
+}
 #else
 #include "cmsis_compiler.h"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * 发送一条 CAN 消息
@@ -43,12 +51,14 @@ uint32_t CAN_SendMessage(CAN_HandleTypeDef* hcan, const CAN_TxHeaderTypeDef head
     else
 #ifdef USE_RTOS
     { // 任务中调用需要加临界保护
-        osKernelLock();
+        if (osMutexAcquire(get_can_mutex(), CAN_SEND_TIMEOUT) != osOK)
+            // 超时
+            return CAN_SEND_FAILED;
         if (HAL_CAN_AddTxMessage(hcan, &header, data, &mailbox) != HAL_OK)
         {
             CAN_ERROR_HANDLER();
         }
-        osKernelUnlock();
+        osMutexRelease(get_can_mutex());
     }
 #else
     {

@@ -13,10 +13,13 @@
 
 #define CAN_ERROR_HANDLER() Error_Handler()
 #define CAN_SEND_FAILED     (0xFFFF)
+#define CAN_SEND_TIMEOUT    (10)
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// TODO: 增加更完善的错误返回逻辑
 
 
 uint32_t CAN_SendMessage(CAN_HandleTypeDef* hcan, CAN_TxHeaderTypeDef header, uint8_t data[]);
