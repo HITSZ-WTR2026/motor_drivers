@@ -8,7 +8,7 @@
 #define TB6612_H
 #include <stdbool.h>
 
-#define __TB6612_VERSION__ "0.1.0"
+#define __TB6612_VERSION__ "0.2.0"
 
 #include "bsp/gpio_driver.h"
 #include "bsp/pwm.h"
@@ -16,6 +16,8 @@
 typedef struct
 {
     bool enable;                //< 是否启用
+    bool output_reverse;        //< 输出反向
+    bool feedback_reverse;      //< 编码器反馈反向
     TIM_HandleTypeDef* encoder; //< 使用的编码器对应的定时器
     GPIO_t in1, in2;            //<
     PWM_t pwm;                  //< 使用的PWM通道
@@ -31,6 +33,8 @@ typedef struct
 
 typedef struct
 {
+    bool motor_reverse;         //< 电机反向，希望电机实际旋转方向与设置的控制方向相反时启用
+    bool encoder_reverse;       //< 编码器反向，编码器方向与实际电机方向相反时启用
     TIM_HandleTypeDef* encoder; //< 使用的编码器对应的定时器
     GPIO_t in1, in2;            //<
     PWM_t pwm;                  //< 使用的PWM通道
