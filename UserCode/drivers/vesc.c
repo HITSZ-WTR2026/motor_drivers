@@ -243,7 +243,7 @@ void VESC_SendSetCmd(VESC_t* hvesc, const VESC_CAN_PocketSet_t pocket_id, const 
     static uint8_t data[8] = {0};
     get_set_command_data(hvesc, pocket_id, value, data);
     CAN_SendMessage(hvesc->hcan,
-                    (CAN_TxHeaderTypeDef){
+                    &(CAN_TxHeaderTypeDef){
                         .ExtId = pocket_id << 8 | hvesc->id,
                         .IDE   = CAN_ID_EXT,
                         .RTR   = CAN_RTR_DATA,
@@ -274,8 +274,10 @@ void VESC_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan)
 /**
  * CAN 基本接收回调函数
  * @param hcan
+ * @param header
+ * @param data
  */
-void VESC_CAN_BaseReceiveCallback(CAN_HandleTypeDef* hcan, CAN_RxHeaderTypeDef* header, uint8_t data[])
+void VESC_CAN_BaseReceiveCallback(CAN_HandleTypeDef* hcan, const CAN_RxHeaderTypeDef* header, const uint8_t data[])
 {
     for (int i = 0; i < map_size; i++)
     {
