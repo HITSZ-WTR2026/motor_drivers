@@ -52,6 +52,8 @@ void TB6612_Control_Init()
      */
     TB6612_Init(&tb6612, (TB6612_Config_t){
                              .encoder         = &htim2, //< 编码器使用的定时器
+                             .encoder_reverse = false,  //< 编码器反向，编码器方向与实际电机方向相反时启用
+                             .motor_reverse   = false,  //< 电机反向，希望电机实际旋转方向与设置的控制方向相反时启用
                              .in1             = {AIN1_GPIO_Port, AIN1_Pin},
                              .in2             = {AIN2_GPIO_Port, AIN2_Pin},
                              .pwm             = {&htim8, TIM_CHANNEL_1},

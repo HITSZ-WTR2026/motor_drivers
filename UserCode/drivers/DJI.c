@@ -135,7 +135,7 @@ void DJI_SendSetIqCommand(CAN_HandleTypeDef* hcan, const DJI_IqSetCmdGroup_t cmd
                 }
             }
             CAN_SendMessage(hcan,
-                            (CAN_TxHeaderTypeDef){
+                            &(CAN_TxHeaderTypeDef){
                                 .StdId = cmd_group == IQ_CMD_GROUP_1_4 ? 0x200 : 0x1FF,
                                 .IDE   = CAN_ID_STD,
                                 .RTR   = CAN_RTR_DATA,
