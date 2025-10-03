@@ -29,7 +29,7 @@ static size_t map_size = 0;
 
 static CAN_FifoReceiveCallback_t* get_callbacks(const CAN_HandleTypeDef* hcan)
 {
-    for (int i = 0; i < map_size; i++)
+    for (size_t i = 0; i < map_size; i++)
         if (maps[i].hcan == hcan)
             return maps[i].callbacks;
 
@@ -108,17 +108,23 @@ void CAN_Start(CAN_HandleTypeDef* hcan, const uint32_t ActiveITs)
 /**
  * 注册 CAN Fifo 处理回调
  *
+ * @attention 本函数非线程安全，调用时请注意
  * @note 重复注册将会覆盖之前的回调
  * @param hcan hcan
- * @param filter_bank 注册对应的 filter 编号
+ * @param filter_match_index 注册对应的 filter 编号
  * @param callback 回调函数指针
  */
-void CAN_RegisterCallback(CAN_HandleTypeDef* hcan, const uint32_t filter_bank, CAN_FifoReceiveCallback_t callback)
+void CAN_RegisterCallback(CAN_HandleTypeDef* hcan, const uint32_t filter_match_index, CAN_FifoReceiveCallback_t callback)
 {
     CAN_FifoReceiveCallback_t* callbacks = get_callbacks(hcan);
 
     if (callbacks == NULL)
     {
+        if (map_size >= CAN_NUM)
+        {
+            CAN_ERROR_HANDLER();
+            return;
+        }
         maps[map_size] = (CAN_CallbackMap){
             .hcan      = hcan,
             .callbacks = {NULL}};
@@ -126,19 +132,21 @@ void CAN_RegisterCallback(CAN_HandleTypeDef* hcan, const uint32_t filter_bank, C
         map_size++;
     }
 
-    callbacks[filter_bank] = callback;
+    callbacks[filter_match_index] = callback;
 }
 
 /**
  * 取消注册 CAN Fifo 处理回调
+ *
+ * @attention 本函数非线程安全，调用时请注意
  * @param hcan can handle
- * @param filter_bank 需要取消注册对应的过滤器对应的 id
+ * @param filter_match_index 需要取消注册对应的过滤器对应的 id
  */
-void CAN_UnregisterCallback(CAN_HandleTypeDef* hcan, const uint32_t filter_bank)
+void CAN_UnregisterCallback(CAN_HandleTypeDef* hcan, const uint32_t filter_match_index)
 {
     CAN_FifoReceiveCallback_t* callbacks = get_callbacks(hcan);
     if (callbacks != NULL)
-        callbacks[filter_bank] = NULL;
+        callbacks[filter_match_index] = NULL;
 }
 
 /**
