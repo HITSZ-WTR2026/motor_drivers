@@ -22,7 +22,7 @@ extern "C" {
 // TODO: 增加更完善的错误返回逻辑
 
 
-uint32_t CAN_SendMessage(CAN_HandleTypeDef* hcan, CAN_TxHeaderTypeDef header, uint8_t data[]);
+uint32_t CAN_SendMessage(CAN_HandleTypeDef* hcan, const CAN_TxHeaderTypeDef* header, const uint8_t data[]);
 void CAN_Start(CAN_HandleTypeDef* hcan, uint32_t ActiveITs);
 
 
