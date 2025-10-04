@@ -39,6 +39,7 @@ void DJI_Init(DJI_t* hdji, const DJI_Config_t dji_config)
     memset(hdji, 0, sizeof(DJI_t));
 
     hdji->enable             = true;
+    hdji->reverse            = dji_config.reverse;
     hdji->auto_zero          = dji_config.auto_zero;
     hdji->can                = dji_config.hcan->Instance;
     hdji->id1                = dji_config.id1;
@@ -91,10 +92,12 @@ void DJI_DataDecode(DJI_t* hdji, const uint8_t data[8])
         hdji->feedback.round_cnt--;
 
     hdji->feedback.mech_angle = feedback_angle;
-    hdji->abs_angle           = ((float)hdji->feedback.round_cnt * 360.0f + hdji->feedback.mech_angle - hdji->angle_zero) * hdji->inv_reduction_rate;
+    hdji->abs_angle           = (hdji->reverse ? -1.0f : 1.0f) * // 反转时需要反转角度输入
+                      ((float)hdji->feedback.round_cnt * 360.0f + hdji->feedback.mech_angle - hdji->angle_zero) * hdji->inv_reduction_rate;
 
     hdji->feedback.rpm = feedback_rpm;
-    hdji->velocity     = hdji->feedback.rpm * hdji->inv_reduction_rate;
+    hdji->velocity     = (hdji->reverse ? -1.0f : 1.0f) * // 反转时需要反转速度输入
+                     hdji->feedback.rpm * hdji->inv_reduction_rate;
 
     hdji->feedback_count++;
     if (hdji->feedback_count == 50 && hdji->auto_zero)
@@ -129,10 +132,12 @@ void DJI_SendSetIqCommand(CAN_HandleTypeDef* hcan, const DJI_IqSetCmdGroup_t cmd
             uint8_t iq_data[8] = {};
             for (int j = 0; j < 4; j++)
             {
-                if (map[i].motors[j + cmd_group] != NULL)
+                const DJI_t* hdji = map[i].motors[j + cmd_group];
+                if (hdji != NULL)
                 {
-                    iq_data[1 + j * 2] = (uint8_t)(map[i].motors[j + cmd_group]->iq_cmd & 0xFF);      // 电流值低 8 位
-                    iq_data[0 + j * 2] = (uint8_t)(map[i].motors[j + cmd_group]->iq_cmd >> 8 & 0xFF); // 电流值高 8 位
+                    const int32_t iq_cmd = hdji->reverse ? -hdji->iq_cmd : hdji->iq_cmd;
+                    iq_data[1 + j * 2]   = (uint8_t)(iq_cmd & 0xFF);      // 电流值低 8 位
+                    iq_data[0 + j * 2]   = (uint8_t)(iq_cmd >> 8 & 0xFF); // 电流值高 8 位
                 }
             }
             CAN_SendMessage(hcan,
