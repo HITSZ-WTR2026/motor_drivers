@@ -38,10 +38,13 @@ void DJI_Init(DJI_t* hdji, const DJI_Config_t dji_config)
 {
     memset(hdji, 0, sizeof(DJI_t));
 
-    hdji->enable    = true;
-    hdji->auto_zero = dji_config.auto_zero;
-    hdji->can       = dji_config.hcan->Instance;
-    hdji->id1       = dji_config.id1;
+    hdji->enable             = true;
+    hdji->auto_zero          = dji_config.auto_zero;
+    hdji->can                = dji_config.hcan->Instance;
+    hdji->id1                = dji_config.id1;
+    hdji->inv_reduction_rate = 1.0f /                                                              // 取倒数将除法转为乘法加快运算速度
+                               ((dji_config.reduction_rate > 0 ? dji_config.reduction_rate : 1.0f) // 外接减速比
+                                * reduction_rate_map[dji_config.motor_type]);                      // 电机内部减速比
 
     /* 注册回调 */
     DJI_t** mapped_motors = NULL;
@@ -87,13 +90,11 @@ void DJI_DataDecode(DJI_t* hdji, const uint8_t data[8])
     if (feedback_angle > 270 && hdji->feedback.mech_angle < 90)
         hdji->feedback.round_cnt--;
 
-    // 为什么不能用 rust 的 match
-    const float reduction_rate = reduction_rate_map[hdji->motor_type];
-    hdji->feedback.mech_angle  = feedback_angle;
-    hdji->abs_angle            = ((float)hdji->feedback.round_cnt * 360.0f + hdji->feedback.mech_angle - hdji->angle_zero) / reduction_rate;
+    hdji->feedback.mech_angle = feedback_angle;
+    hdji->abs_angle           = ((float)hdji->feedback.round_cnt * 360.0f + hdji->feedback.mech_angle - hdji->angle_zero) * hdji->inv_reduction_rate;
 
     hdji->feedback.rpm = feedback_rpm;
-    hdji->velocity     = hdji->feedback.rpm / reduction_rate;
+    hdji->velocity     = hdji->feedback.rpm * hdji->inv_reduction_rate;
 
     hdji->feedback_count++;
     if (hdji->feedback_count == 50 && hdji->auto_zero)
@@ -168,7 +169,7 @@ void DJI_CAN_FilterInit(CAN_HandleTypeDef* hcan, const uint32_t filter_bank)
 /**
  * CAN FIFO0 接收回调函数
  * @attention 必须*注册*回调函数或者在更高级的回调函数内调用此回调函数
- * @code 使用
+ * @note 使用
  *          HAL_CAN_RegisterCallback(hcan, HAL_CAN_RX_FIFO0_MSG_PENDING_CB_ID, DJI_CAN_Fifo0ReceiveCallback);
  *       来注册回调函数
  * @param hcan
@@ -206,8 +207,10 @@ void DJI_CAN_Fifo1ReceiveCallback(CAN_HandleTypeDef* hcan)
 /**
  * CAN 基本接收回调函数
  * @param hcan
+ * @param header
+ * @param data
  */
-void DJI_CAN_BaseReceiveCallback(CAN_HandleTypeDef* hcan, CAN_RxHeaderTypeDef* header, uint8_t data[])
+void DJI_CAN_BaseReceiveCallback(const CAN_HandleTypeDef* hcan, const CAN_RxHeaderTypeDef* header, uint8_t data[])
 {
     for (int i = 0; i < map_size; i++)
     {

@@ -51,6 +51,8 @@ typedef struct
     uint8_t id1;                //< 电调 ID (1 ~ 8)
     float angle_zero;           //< 零点角度 (unit: degree)
 
+    float inv_reduction_rate; ///< 减速比
+
     /* Feedback */
     uint32_t feedback_count; //< 接收到的反馈数据数量
     struct
@@ -82,7 +84,8 @@ typedef struct
     bool auto_zero;
     DJI_MotorType_t motor_type;
     CAN_HandleTypeDef* hcan;
-    uint8_t id1;
+    uint8_t id1;          ///< 电机编号 1~8
+    float reduction_rate; ///< 外接减速比
 } DJI_Config_t;
 
 /**
@@ -101,7 +104,7 @@ void DJI_CAN_FilterInit(CAN_HandleTypeDef* hcan, uint32_t filter_bank);
 
 void DJI_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);
 void DJI_CAN_Fifo1ReceiveCallback(CAN_HandleTypeDef* hcan);
-void DJI_CAN_BaseReceiveCallback(CAN_HandleTypeDef* hcan, CAN_RxHeaderTypeDef* header, uint8_t data[]);
+void DJI_CAN_BaseReceiveCallback(const CAN_HandleTypeDef* hcan, const CAN_RxHeaderTypeDef* header, uint8_t data[]);
 
 void DJI_SendSetIqCommand(CAN_HandleTypeDef* hcan, DJI_IqSetCmdGroup_t cmd_group);
 
