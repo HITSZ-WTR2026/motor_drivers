@@ -198,6 +198,29 @@ static inline float Motor_GetAngle(const MotorType_t motor_type, void* hmotor)
     }
 }
 
+static inline void Motor_ResetAngle(const MotorType_t motor_type, void* hmotor)
+{
+    switch (motor_type)
+    {
+#ifdef USE_DJI
+    case MOTOR_TYPE_DJI:
+        DJI_ResetAngle(hmotor);
+        break;
+#endif
+#ifdef USE_TB6612
+    case MOTOR_TYPE_TB6612:
+        __TB6612_RESET_ANGLE(hmotor);
+        break;
+#endif
+#ifdef USE_VESC
+    case MOTOR_TYPE_VESC:
+        VESC_ResetAngle(hmotor);
+        break;
+#endif
+    default:;
+    }
+}
+
 /**
  * 获取电机转速
  * @param motor_type 电机类型
