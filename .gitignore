@@ -1,14 +1,14 @@
 ### STM32CubeMX ###
 # CubeMX auto-generated sources
-Core/
-Drivers/
-Middlewares/
-USB_Device/
-FATFS/
-LWIP/
-MX/
-TouchGFX/
-Utilities/
+/Core/
+/Drivers/
+/Middlewares/
+/USB_Device/
+/FATFS/
+/LWIP/
+/MX/
+/TouchGFX/
+/Utilities/
 .startup/
 startup_stm32*.s
 *.ld
