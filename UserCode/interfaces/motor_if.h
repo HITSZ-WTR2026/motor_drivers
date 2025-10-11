@@ -8,22 +8,6 @@
  *   - drivers/DJI.h: 大疆电机
  *   - drivers/tb6612.h: 由 TB6612 芯片驱动的直流电机
  *   - drivers/vesc.h: VESC 电调驱动的电机
- *
- * --------------------------------------------------------------------------
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
- * Project repository: https://github.com/HITSZ-WTR2026/motor_drivers
  */
 #ifndef MOTOR_IF_H
 #define MOTOR_IF_H
@@ -36,6 +20,7 @@
 #define USE_DJI
 #define USE_TB6612
 #define USE_VESC
+#define USE_DM
 
 #ifdef USE_DJI
 #include "drivers/DJI.h"
@@ -49,6 +34,9 @@
 #include "drivers/vesc.h"
 #endif
 
+#ifdef USE_DM
+#include "drivers/DM.h"
+#endif
 
 typedef enum
 {
@@ -60,6 +48,9 @@ typedef enum
 #endif
 #ifdef USE_VESC
     MOTOR_TYPE_VESC,
+#endif
+#ifdef USE_DM
+    MOTOR_TYPE_DM,
 #endif
 } MotorType_t;
 
@@ -209,6 +200,10 @@ static inline float Motor_GetAngle(const MotorType_t motor_type, void* hmotor)
     case MOTOR_TYPE_VESC:
         return __VESC_GET_ANGLE(hmotor);
 #endif
+#ifdef USE_DM
+    case MOTOR_TYPE_DM:
+        return __DM_GET_ANGLE(hmotor);
+#endif
     default:
         return 0.0f;
     }
@@ -236,9 +231,14 @@ static inline float Motor_GetVelocity(const MotorType_t motor_type, void* hmotor
     case MOTOR_TYPE_VESC:
         return __VESC_GET_VELOCITY(hmotor);
 #endif
+#ifdef USE_DM
+    case MOTOR_TYPE_DM:
+        return __DM_GET_VELOCITY(hmotor);
+#endif    
     default:
         return 0.0f;
     }
 }
+
 
 #endif // MOTOR_IF_H
