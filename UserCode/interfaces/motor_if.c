@@ -2,8 +2,8 @@
  * @file    motor_if.c
  * @author  syhanjin
  * @date    2025-09-04
- * @brief
- *
+ * 
+ * *
  * Detailed description (optional).
  *
  * --------------------------------------------------------------------------
@@ -51,6 +51,11 @@ static inline void set_output(const MotorType_t motor_type, void* hmotor, float 
         /* 语义不符合，不将设置速度控制归类为控制输出 */
         return;
 #endif
+#ifdef USE_DM
+    case MOTOR_TYPE_DM:
+        __DM_SET_POS_CMD(hmotor, output);
+        break;
+#endif
     default:
         break;
     }
@@ -72,14 +77,25 @@ void Motor_PosCtrl_Init(Motor_PosCtrl_t* hctrl, const Motor_PosCtrlConfig_t conf
         // VESC 电调可以使用自己的速度环
         memset(&hctrl->velocity_pid, 0, sizeof(MotorPID_t));
         hctrl->pos_vel_freq_ratio = 1;
+        MotorPID_Init(&hctrl->position_pid, config.position_pid);
+    }   
+    else
+#endif
+#ifdef USE_DM
+    if(config.motor_type == MOTOR_TYPE_DM)
+    {
+        //DM 电调使用自己的位置环和速度环
+        memset(&hctrl->velocity_pid, 0, sizeof(MotorPID_t));
+        memset(&hctrl->position_pid, 0, sizeof(MotorPID_t));
+        hctrl->pos_vel_freq_ratio = 1;
     }
     else
 #endif
     {
         MotorPID_Init(&hctrl->velocity_pid, config.velocity_pid);
         hctrl->pos_vel_freq_ratio = config.pos_vel_freq_ratio ? config.pos_vel_freq_ratio : 1;
+        MotorPID_Init(&hctrl->position_pid, config.position_pid);
     }
-    MotorPID_Init(&hctrl->position_pid, config.position_pid);
 
     hctrl->settle.count_max       = config.settle_count_max ? config.settle_count_max : 50;
     hctrl->settle.error_threshold = config.error_threshold;
@@ -127,6 +143,17 @@ void Motor_PosCtrlUpdate(Motor_PosCtrl_t* hctrl)
     else
         hctrl->settle.counter = 0;
 
+#ifdef USE_DM
+    /**
+     * DM 电调的 PID 控制由他自己完成，我们只需要发送控制指令
+     * 控制指令频率不小于 5Hz
+     */
+    if (hctrl->motor_type == MOTOR_TYPE_DM)
+    {        
+        __DM_SET_POS_CMD(hctrl->motor, hctrl->position);
+        return;
+    }
+#endif
 
     if (hctrl->count == hctrl->pos_vel_freq_ratio)
     {
@@ -136,6 +163,7 @@ void Motor_PosCtrlUpdate(Motor_PosCtrl_t* hctrl)
         MotorPID_Calculate(&hctrl->position_pid);
         hctrl->count = 0;
     }
+
 
 #ifdef USE_VESC
     if (hctrl->motor_type == MOTOR_TYPE_VESC)
@@ -162,21 +190,30 @@ void Motor_VelCtrlUpdate(Motor_VelCtrl_t* hctrl)
         return;
 
     /**
+     * DM 电调的 PID 控制由他自己完成，我们只需要发送控制指令
+     * 控制指令频率不小于 5Hz
+     */
+    #ifdef USE_DM
+    if(hctrl->motor_type == MOTOR_TYPE_DM)
+    {
+        __DM_SET_VEL_CMD(hctrl->motor, hctrl->velocity);
+    }else
+    #endif
+    /**
      * VESC 电调的 PID 控制由他自己完成，我们只需要发送控制指令
      * 控制指令频率不小于 5Hz
      */
-#ifdef USE_VESC
+    #ifdef USE_VESC
     if (hctrl->motor_type == MOTOR_TYPE_VESC)
     {
         VESC_SendSetCmd(hctrl->motor, VESC_CAN_SET_RPM, hctrl->velocity);
     }
     else
-#endif
+    #endif 
     {
         hctrl->pid.ref = hctrl->velocity;
         hctrl->pid.fdb = Motor_GetVelocity(hctrl->motor_type, hctrl->motor);
         MotorPID_Calculate(&hctrl->pid);
-
         set_output(hctrl->motor_type, hctrl->motor, hctrl->pid.output);
     }
 }
