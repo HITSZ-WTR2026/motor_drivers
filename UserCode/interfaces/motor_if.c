@@ -2,7 +2,25 @@
  * @file    motor_if.c
  * @author  syhanjin
  * @date    2025-09-04
- * @brief
+ * 
+ * *
+ * Detailed description (optional).
+ *
+ * --------------------------------------------------------------------------
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Project repository: https://github.com/HITSZ-WTR2026/motor_drivers
  */
 #include "motor_if.h"
 #include <math.h>
@@ -53,6 +71,7 @@ void Motor_PosCtrl_Init(Motor_PosCtrl_t* hctrl, const Motor_PosCtrlConfig_t conf
 {
     hctrl->motor_type = config.motor_type;
     hctrl->motor      = config.motor;
+#ifdef USE_VESC
     if (config.motor_type == MOTOR_TYPE_VESC)
     {
         // VESC 电调可以使用自己的速度环
@@ -60,7 +79,10 @@ void Motor_PosCtrl_Init(Motor_PosCtrl_t* hctrl, const Motor_PosCtrlConfig_t conf
         hctrl->pos_vel_freq_ratio = 1;
         MotorPID_Init(&hctrl->position_pid, config.position_pid);
     }   
-    else if(config.motor_type == MOTOR_TYPE_DM)
+    else
+#endif
+#ifdef USE_DM
+    if(config.motor_type == MOTOR_TYPE_DM)
     {
         //DM 电调使用自己的位置环和速度环
         memset(&hctrl->velocity_pid, 0, sizeof(MotorPID_t));
@@ -68,6 +90,7 @@ void Motor_PosCtrl_Init(Motor_PosCtrl_t* hctrl, const Motor_PosCtrlConfig_t conf
         hctrl->pos_vel_freq_ratio = 1;
     }
     else
+#endif
     {
         MotorPID_Init(&hctrl->velocity_pid, config.velocity_pid);
         hctrl->pos_vel_freq_ratio = config.pos_vel_freq_ratio ? config.pos_vel_freq_ratio : 1;
