@@ -102,15 +102,15 @@ static inline MotorCtrlMode_t get_default_ctrl_mode(const MotorType_t motor_type
     {
 #ifdef USE_DJI
     case MOTOR_TYPE_DJI:
-        return MOTOR_CTRL_EXTERNAL_PID;
+        return MOTOR_DEFAULT_MODE_DJI;
 #endif
 #ifdef USE_TB6612
     case MOTOR_TYPE_TB6612:
-        return MOTOR_CTRL_EXTERNAL_PID;
+        return MOTOR_DEFAULT_MODE_TB6612;
 #endif
 #ifdef USE_VESC
     case MOTOR_TYPE_VESC:
-        return MOTOR_CTRL_INTERNAL_VEL;
+        return MOTOR_DEFAULT_MODE_VESC;
 #endif
     default:
         return MOTOR_CTRL_EXTERNAL_PID;
