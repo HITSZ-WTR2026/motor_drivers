@@ -226,7 +226,7 @@ static inline void Motor_PosCtrl_SetRef(Motor_PosCtrl_t* hctrl, const float ref)
 {
     hctrl->position = ref;
 #ifdef MOTOR_IF_INTERNAL_VEL_POS
-    if (hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_POS)
+    if (hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL_POS)
     { // 在内部位置环控制模式下，需要在设置时立刻同步一次指令
         Motor_PosCtrlUpdate(hctrl);
     }
