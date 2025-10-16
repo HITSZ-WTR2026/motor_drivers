@@ -33,7 +33,7 @@ extern "C" {
 
 /******** 🛠️⚠️ 电机扩展提醒块 ⚠️🛠️ ********
  * 新增电机时需要在 motor_if.c 中实现：
- * 1. motor_apply_current, 对于无电流控制的电机可忽略
+ * 1. motor_apply_output, 对于无电流控制的电机可忽略
  * 2. motor_send_internal_velocity, 对于无内部速度控制的电机可忽略
  * 3. motor_send_internal_position, 对于无内部位置控制的电机可忽略
  * 4. get_default_ctrl_mode: 最好和当前一样通过 宏 定义默认值
@@ -43,21 +43,21 @@ extern "C" {
  * 应用电流控制
  * @param motor_type 电机类型
  * @param hmotor 电机数据
- * @param current 电流 （或占空比）
+ * @param output 电流 （或占空比）
  */
-static inline void motor_apply_current(const MotorType_t motor_type, void* hmotor, const float current)
+static inline void motor_apply_output(const MotorType_t motor_type, void* hmotor, const float output)
 {
     // ATTENTION: 此处不做输出限幅校验，输出限幅应当放在 PID 参数中
     switch (motor_type)
     {
 #ifdef USE_DJI
     case MOTOR_TYPE_DJI:
-        __DJI_SET_IQ_CMD(hmotor, current);
+        __DJI_SET_IQ_CMD(hmotor, output);
         break;
 #endif
 #ifdef USE_TB6612
     case MOTOR_TYPE_TB6612:
-        return TB6612_SetSpeed(hmotor, current);
+        return TB6612_SetSpeed(hmotor, output);
 #endif
 #ifdef USE_VESC
     case MOTOR_TYPE_VESC:
@@ -277,7 +277,7 @@ void Motor_PosCtrlUpdate(Motor_PosCtrl_t* hctrl)
     hctrl->velocity_pid.ref = hctrl->position_pid.output;
     hctrl->velocity_pid.fdb = Motor_GetVelocity(hctrl->motor_type, hctrl->motor);
     MotorPID_Calculate(&hctrl->velocity_pid);
-    motor_apply_current(hctrl->motor_type, hctrl->motor, hctrl->velocity_pid.output);
+    motor_apply_output(hctrl->motor_type, hctrl->motor, hctrl->velocity_pid.output);
 }
 
 /**
@@ -301,7 +301,7 @@ void Motor_VelCtrlUpdate(Motor_VelCtrl_t* hctrl)
     hctrl->pid.fdb = Motor_GetVelocity(hctrl->motor_type, hctrl->motor);
     MotorPID_Calculate(&hctrl->pid);
 
-    motor_apply_current(hctrl->motor_type, hctrl->motor, hctrl->pid.output);
+    motor_apply_output(hctrl->motor_type, hctrl->motor, hctrl->pid.output);
 }
 
 #ifdef __cplusplus
