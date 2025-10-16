@@ -35,11 +35,20 @@
 
 // 希望在初始化时手动决定控制模式请启用以下宏
 // #define USE_CUSTOM_CTRL_MODE
-// 如果有增加完全使用 `内部PID` 的电机，在引入头文件时添加此项
-// #define MOTOR_IF_INTERNAL_VEL_POS
 
-// 如果有增加使用 `内部速度控制` + `外部位置控制的电机`，在引入头文件时添加此项
-// #define MOTOR_IF_INTERNAL_VEL_POS
+/******* 🛠️⚠️ 电机扩展提醒块 BEGIN ⚠️🛠️ ********
+ * 新增电机时需要在 motor_if.h 中：
+ * 1. 新增 USE_* 的电机类型启用标志
+ * 2. 新增条件编译的头文件引入
+ *    如果有增加完全使用 `内部PID` 的电机，在引入头文件时添加此项
+ *      #define MOTOR_IF_INTERNAL_VEL_POS
+ *    如果有增加使用 `内部速度控制` + `外部位置控制的电机`，在引入头文件时添加此项
+ *      #define MOTOR_IF_INTERNAL_VEL_POS
+ * 3. 在 MotorType_t 里增加条件编译的电机类型
+ * 4. 通过宏定义新增 电机控制模式 默认值
+ * 5. 实现 Motor_GetAngle
+ * 6. 实现 Motor_GetVelocity
+ ****************************************/
 
 #define USE_DJI
 #define USE_TB6612
@@ -89,6 +98,7 @@ typedef enum
 } MotorCtrlMode_t;
 
 
+// 电机控制模式的默认值
 #if defined(USE_DJI) && !defined(MOTOR_DEFAULT_MODE_DJI)
 #define MOTOR_DEFAULT_MODE_DJI MOTOR_CTRL_EXTERNAL_PID
 #endif
