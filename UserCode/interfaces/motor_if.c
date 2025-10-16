@@ -26,6 +26,10 @@
 #include <math.h>
 #include <string.h>
 
+#ifdef __cpluscplus
+extern "C" {
+#endif
+
 /**
  * 应用电流控制
  * @param motor_type 电机类型
@@ -290,3 +294,7 @@ void Motor_VelCtrlUpdate(Motor_VelCtrl_t* hctrl)
 
     motor_apply_current(hctrl->motor_type, hctrl->motor, hctrl->pid.output);
 }
+
+#ifdef __cplusplus
+}
+#endif

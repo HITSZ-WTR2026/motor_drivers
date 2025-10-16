@@ -58,6 +58,9 @@
 #define MOTOR_IF_INTERNAL_VEL
 #endif
 
+#ifdef __cpluscplus
+extern "C" {
+#endif
 
 typedef enum
 {
@@ -299,5 +302,8 @@ static inline float Motor_GetVelocity(const MotorType_t motor_type, void* hmotor
         return 0.0f;
     }
 }
+#ifdef __cplusplus
+}
+#endif
 
 #endif // MOTOR_IF_H
