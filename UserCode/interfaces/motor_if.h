@@ -67,7 +67,7 @@
 #define MOTOR_IF_INTERNAL_VEL
 #endif
 
-#ifdef __cpluscplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 

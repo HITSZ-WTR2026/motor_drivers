@@ -26,7 +26,7 @@
 #include <math.h>
 #include <string.h>
 
-#ifdef __cpluscplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
