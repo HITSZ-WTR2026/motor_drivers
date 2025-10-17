@@ -28,7 +28,7 @@
 #ifndef MOTOR_IF_H
 #define MOTOR_IF_H
 
-#define __MOTOR_IF_VERSION__ "0.2.0"
+#define __MOTOR_IF_VERSION__ "1.2.0"
 
 #include <stdbool.h>
 #include "libs/pid_motor.h"
