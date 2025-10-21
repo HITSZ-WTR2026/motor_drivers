@@ -125,8 +125,8 @@ void DM_Control_Init()
                         });
 
 
-    HAL_TIM_RegisterCallback(&htim3, HAL_TIM_PERIOD_ELAPSED_CB_ID, TIM_Callback);
-    HAL_TIM_Base_Start_IT(&htim3);
+    HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, TIM_Callback);
+    HAL_TIM_Base_Start_IT(&htim6);
     
     osThreadExit();
 

@@ -2,6 +2,7 @@
 #define DM_H
 #define MST_ID 0x114  
 #include "main.h"
+
 typedef struct
 {
     uint32_t feedback_count;
@@ -24,7 +25,7 @@ typedef struct
     float POS_MAX;
     float VEL_MAX;
     float T_MAX;
-} DM_t;
+}DM_t;
 
 
 typedef struct

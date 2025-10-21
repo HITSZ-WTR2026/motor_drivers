@@ -26,13 +26,26 @@
 #include <math.h>
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/******** 🛠️⚠️ 电机扩展提醒块 ⚠️🛠️ ********
+ * 新增电机时需要在 motor_if.c 中实现：
+ * 1. motor_apply_output, 对于无电流控制的电机可忽略
+ * 2. motor_send_internal_velocity, 对于无内部速度控制的电机可忽略
+ * 3. motor_send_internal_position, 对于无内部位置控制的电机可忽略
+ * 4. get_default_ctrl_mode: 最好和当前一样通过 宏 定义默认值
+ ****************************************/
+
 /**
- * 设置控制量
+ * 应用电流控制
  * @param motor_type 电机类型
  * @param hmotor 电机数据
- * @param output 控制量
+ * @param output 电流 （或占空比）
  */
-static inline void set_output(const MotorType_t motor_type, void* hmotor, float output)
+static inline void motor_apply_output(const MotorType_t motor_type, void* hmotor, const float output)
 {
     // ATTENTION: 此处不做输出限幅校验，输出限幅应当放在 PID 参数中
     switch (motor_type)
@@ -48,7 +61,7 @@ static inline void set_output(const MotorType_t motor_type, void* hmotor, float 
 #endif
 #ifdef USE_VESC
     case MOTOR_TYPE_VESC:
-        /* 语义不符合，不将设置速度控制归类为控制输出 */
+        /* VESC 电调不应在控制时设置电流 */
         return;
 #endif
 #ifdef USE_DM
@@ -57,6 +70,97 @@ static inline void set_output(const MotorType_t motor_type, void* hmotor, float 
         break;
 #endif
     default:
+        break;
+    }
+}
+
+/**
+ * 发送电机内部速度控制指令
+ * @param motor_type 电机类型
+ * @param hmotor 电机对象
+ * @param speed 速度
+ */
+static inline void motor_send_internal_velocity(const MotorType_t motor_type, void* hmotor, const float speed)
+{
+    switch (motor_type)
+    {
+#ifdef USE_VESC
+    case MOTOR_TYPE_VESC:
+        VESC_SendSetCmd(hmotor, VESC_CAN_SET_RPM, speed);
+        break;
+#endif
+    default:
+        break;
+    }
+}
+
+static inline void motor_send_internal_position(const MotorType_t motor_type, void* hmotor, const float position)
+{
+    switch (motor_type)
+    {
+#ifdef USE_VESC
+    case MOTOR_TYPE_VESC:
+        // 这里并不是普遍意义下的多圈位置，这里仅是单圈位置
+        // VESC_SendSetCmd(hmotor, VESC_CAN_SET_POS, position);
+        // break;
+        return;
+#endif
+    default:
+        break;
+    }
+}
+
+static inline MotorCtrlMode_t get_default_ctrl_mode(const MotorType_t motor_type)
+{
+    switch (motor_type)
+    {
+#ifdef USE_DJI
+    case MOTOR_TYPE_DJI:
+        return MOTOR_DEFAULT_MODE_DJI;
+#endif
+#ifdef USE_TB6612
+    case MOTOR_TYPE_TB6612:
+        return MOTOR_DEFAULT_MODE_TB6612;
+#endif
+#ifdef USE_VESC
+    case MOTOR_TYPE_VESC:
+        return MOTOR_DEFAULT_MODE_VESC;
+#endif
+    default:
+        return MOTOR_CTRL_EXTERNAL_PID;
+    }
+}
+
+/**
+ * 根据控制模式初始化位置控制器
+ */
+static inline void motor_posctrl_mode_init(Motor_PosCtrl_t* hctrl, const Motor_PosCtrlConfig_t* config)
+{
+    switch (hctrl->ctrl_mode)
+    {
+#ifdef MOTOR_IF_INTERNAL_VEL_POS
+    case MOTOR_CTRL_INTERNAL_VEL_POS:
+        // 完全使用内部PID控制，外部PID全部禁用
+        memset(&hctrl->velocity_pid, 0, sizeof(MotorPID_t));
+        memset(&hctrl->position_pid, 0, sizeof(MotorPID_t));
+        hctrl->pos_vel_freq_ratio = 1;
+        break;
+#endif
+
+#ifdef MOTOR_IF_INTERNAL_VEL
+    case MOTOR_CTRL_INTERNAL_VEL:
+        // 使用电调内部速度环，仅位置环有效
+        memset(&hctrl->velocity_pid, 0, sizeof(MotorPID_t));
+        MotorPID_Init(&hctrl->position_pid, config->position_pid);
+        hctrl->pos_vel_freq_ratio = 1;
+        break;
+#endif
+
+    default:
+        // 完全外部PID控制
+        MotorPID_Init(&hctrl->velocity_pid, config->velocity_pid);
+        MotorPID_Init(&hctrl->position_pid, config->position_pid);
+        hctrl->pos_vel_freq_ratio = config->pos_vel_freq_ratio ? config->pos_vel_freq_ratio : 1;
         break;
     }
 }
@@ -71,37 +175,44 @@ void Motor_PosCtrl_Init(Motor_PosCtrl_t* hctrl, const Motor_PosCtrlConfig_t conf
 {
     hctrl->motor_type = config.motor_type;
     hctrl->motor      = config.motor;
-#ifdef USE_VESC
-    if (config.motor_type == MOTOR_TYPE_VESC)
-    {
-        // VESC 电调可以使用自己的速度环
-        memset(&hctrl->velocity_pid, 0, sizeof(MotorPID_t));
-        hctrl->pos_vel_freq_ratio = 1;
-        MotorPID_Init(&hctrl->position_pid, config.position_pid);
-    }   
-    else
+#ifdef USE_CUSTOM_CTRL_MODE
+    hctrl->ctrl_mode = config.ctrl_mode;
+#else
+    hctrl->ctrl_mode = get_default_ctrl_mode(config.motor_type);
 #endif
-#ifdef USE_DM
-    if(config.motor_type == MOTOR_TYPE_DM)
-    {
-        //DM 电调使用自己的位置环和速度环
-        memset(&hctrl->velocity_pid, 0, sizeof(MotorPID_t));
-        memset(&hctrl->position_pid, 0, sizeof(MotorPID_t));
-        hctrl->pos_vel_freq_ratio = 1;
-    }
-    else
-#endif
-    {
-        MotorPID_Init(&hctrl->velocity_pid, config.velocity_pid);
-        hctrl->pos_vel_freq_ratio = config.pos_vel_freq_ratio ? config.pos_vel_freq_ratio : 1;
-        MotorPID_Init(&hctrl->position_pid, config.position_pid);
-    }
+
+    motor_posctrl_mode_init(hctrl, &config);
 
     hctrl->settle.count_max       = config.settle_count_max ? config.settle_count_max : 50;
     hctrl->settle.error_threshold = config.error_threshold;
     hctrl->settle.counter         = 0;
 
     hctrl->enable = true;
+}
+
+
+/**
+ * 根据控制模式初始化速度控制器
+ */
+static inline void motor_velctrl_mode_init(Motor_VelCtrl_t* hctrl, const Motor_VelCtrlConfig_t* config)
+{
+    switch (hctrl->ctrl_mode)
+    {
+#ifdef MOTOR_IF_INTERNAL_VEL_POS
+    case MOTOR_CTRL_INTERNAL_VEL_POS:
+        // 完全使用内部PID控制，外部PID全部禁用
+#endif
+#ifdef MOTOR_IF_INTERNAL_VEL
+    case MOTOR_CTRL_INTERNAL_VEL:
+        // 使用电调内部速度环
+        memset(&hctrl->pid, 0, sizeof(MotorPID_t));
+        break;
+#endif
+    default:
+        // 完全外部PID控制
+        MotorPID_Init(&hctrl->pid, config->pid);
+        break;
+    }
 }
 
 /**
@@ -114,15 +225,15 @@ void Motor_VelCtrl_Init(Motor_VelCtrl_t* hctrl, const Motor_VelCtrlConfig_t conf
 {
     hctrl->motor_type = config.motor_type;
     hctrl->motor      = config.motor;
-    hctrl->enable     = true;
-
-    /* VESC 电调忽略 PID 配置*/
-#ifdef USE_VESC
-    if (config.motor_type == MOTOR_TYPE_VESC)
-        return;
+#ifdef USE_CUSTOM_CTRL_MODE
+    hctrl->ctrl_mode = config.ctrl_mode;
+#else
+    hctrl->ctrl_mode = get_default_ctrl_mode(config.motor_type);
 #endif
 
-    MotorPID_Init(&hctrl->pid, config.pid);
+    motor_velctrl_mode_init(hctrl, &config);
+
+    hctrl->enable = true;
 }
 
 /**
@@ -143,14 +254,10 @@ void Motor_PosCtrlUpdate(Motor_PosCtrl_t* hctrl)
     else
         hctrl->settle.counter = 0;
 
-#ifdef USE_DM
-    /**
-     * DM 电调的 PID 控制由他自己完成，我们只需要发送控制指令
-     * 控制指令频率不小于 5Hz
-     */
-    if (hctrl->motor_type == MOTOR_TYPE_DM)
-    {        
-        __DM_SET_POS_CMD(hctrl->motor, hctrl->position);
+#ifdef MOTOR_IF_INTERNAL_VEL_POS
+    if (hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL_POS)
+    {
+        motor_send_internal_position(hctrl->motor_type, hctrl->motor, hctrl->position);
         return;
     }
 #endif
@@ -164,20 +271,18 @@ void Motor_PosCtrlUpdate(Motor_PosCtrl_t* hctrl)
         hctrl->count = 0;
     }
 
-
-#ifdef USE_VESC
-    if (hctrl->motor_type == MOTOR_TYPE_VESC)
+#ifdef MOTOR_IF_INTERNAL_VEL
+    if (hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL)
     {
-        VESC_SendSetCmd(hctrl->motor, VESC_CAN_SET_RPM, hctrl->position_pid.output);
+        motor_send_internal_velocity(hctrl->motor_type, hctrl->motor, hctrl->velocity_pid.output);
+        return;
     }
-    else
 #endif
-    {
-        hctrl->velocity_pid.ref = hctrl->position_pid.output;
-        hctrl->velocity_pid.fdb = Motor_GetVelocity(hctrl->motor_type, hctrl->motor);
-        MotorPID_Calculate(&hctrl->velocity_pid);
-        set_output(hctrl->motor_type, hctrl->motor, hctrl->velocity_pid.output);
-    }
+
+    hctrl->velocity_pid.ref = hctrl->position_pid.output;
+    hctrl->velocity_pid.fdb = Motor_GetVelocity(hctrl->motor_type, hctrl->motor);
+    MotorPID_Calculate(&hctrl->velocity_pid);
+    motor_apply_output(hctrl->motor_type, hctrl->motor, hctrl->velocity_pid.output);
 }
 
 /**
@@ -189,31 +294,21 @@ void Motor_VelCtrlUpdate(Motor_VelCtrl_t* hctrl)
     if (!hctrl->enable)
         return;
 
-    /**
-     * DM 电调的 PID 控制由他自己完成，我们只需要发送控制指令
-     * 控制指令频率不小于 5Hz
-     */
-    #ifdef USE_DM
-    if(hctrl->motor_type == MOTOR_TYPE_DM)
+#ifdef MOTOR_IF_INTERNAL_VEL
+    if (hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL)
     {
-        __DM_SET_VEL_CMD(hctrl->motor, hctrl->velocity);
-    }else
-    #endif
-    /**
-     * VESC 电调的 PID 控制由他自己完成，我们只需要发送控制指令
-     * 控制指令频率不小于 5Hz
-     */
-    #ifdef USE_VESC
-    if (hctrl->motor_type == MOTOR_TYPE_VESC)
-    {
-        VESC_SendSetCmd(hctrl->motor, VESC_CAN_SET_RPM, hctrl->velocity);
+        motor_send_internal_velocity(hctrl->motor_type, hctrl->motor, hctrl->velocity);
+        return;
     }
-    else
-    #endif 
-    {
-        hctrl->pid.ref = hctrl->velocity;
-        hctrl->pid.fdb = Motor_GetVelocity(hctrl->motor_type, hctrl->motor);
-        MotorPID_Calculate(&hctrl->pid);
-        set_output(hctrl->motor_type, hctrl->motor, hctrl->pid.output);
-    }
+#endif
+
+    hctrl->pid.ref = hctrl->velocity;
+    hctrl->pid.fdb = Motor_GetVelocity(hctrl->motor_type, hctrl->motor);
+    MotorPID_Calculate(&hctrl->pid);
+
+    motor_apply_output(hctrl->motor_type, hctrl->motor, hctrl->pid.output);
 }
+
+#ifdef __cplusplus
+}
+#endif

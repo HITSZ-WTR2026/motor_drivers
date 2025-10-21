@@ -29,12 +29,12 @@
  * 因为并没有配置外设，所以这里直接用一点点魔法避免保存
  * 实际使用时需要配置对应的板上外设
  */
-#define htim2          (TIM_HandleTypeDef{})
+#define htim2          ((TIM_HandleTypeDef){})
 #define AIN1_GPIO_Port ((GPIO_TypeDef*)NULL)
 #define AIN1_Pin       (0x00000000U)
 #define AIN2_GPIO_Port ((GPIO_TypeDef*)NULL)
 #define AIN2_Pin       (0x00000000U)
-#define htim8          (TIM_HandleTypeDef{})
+#define htim8          ((TIM_HandleTypeDef){})
 
 TB6612_t tb6612;
 Motor_VelCtrl_t vel_ctrl;

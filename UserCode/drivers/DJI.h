@@ -63,6 +63,7 @@ typedef struct
 {
     bool enable;    // 是否启用
     bool auto_zero; // 是否自动判断零点
+    bool reverse;   ///< 是否反转
 
     DJI_MotorType_t motor_type; //< 电机类型
     CAN_TypeDef* can;           //< CAN 实例
@@ -100,6 +101,7 @@ typedef struct
 typedef struct
 {
     bool auto_zero;
+    bool reverse; ///< 是否反转
     DJI_MotorType_t motor_type;
     CAN_HandleTypeDef* hcan;
     uint8_t id1;          ///< 电机编号 1~8

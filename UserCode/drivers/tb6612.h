@@ -63,6 +63,7 @@ typedef struct
 
 #define __TB6612_GET_ANGLE(__TB6612_HANDLE__)    (((TB6612_t*)(__TB6612_HANDLE__))->angle)
 #define __TB6612_GET_VELOCITY(__TB6612_HANDLE__) (((TB6612_t*)(__TB6612_HANDLE__))->velocity)
+#define __TB6612_RESET_ANGLE(__TB6612_HANDLE__)  (((TB6612_t*)(__TB6612_HANDLE__))->angle = 0.0f)
 
 void TB6612_SetSpeed(TB6612_t* hmotor, float speed);
 void TB6612_Enable(TB6612_t* hmotor);
