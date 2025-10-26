@@ -66,7 +66,7 @@ static inline void motor_apply_output(const MotorType_t motor_type, void* hmotor
 #endif
 #ifdef USE_DM
     case MOTOR_TYPE_DM:
-        __DM_SET_POS_CMD(hmotor, output);
+        /* DM 电调不应该在控制时设置电流*/
         break;
 #endif
     default:
@@ -89,6 +89,12 @@ static inline void motor_send_internal_velocity(const MotorType_t motor_type, vo
         VESC_SendSetCmd(hmotor, VESC_CAN_SET_RPM, speed);
         break;
 #endif
+
+#ifdef USE_DM
+    case MOTOR_TYPE_DM:
+        DM_Vel_SendSetCmd(hmotor, speed);
+        break;
+#endif
     default:
         break;
     }
@@ -105,10 +111,16 @@ static inline void motor_send_internal_position(const MotorType_t motor_type, vo
         // break;
         return;
 #endif
+#ifdef USE_DM
+    case MOTOR_TYPE_DM:
+        DM_Pos_SendSetCmd(hmotor,position);
+        return;
+#endif
     default:
         break;
     }
 }
+
 
 static inline MotorCtrlMode_t get_default_ctrl_mode(const MotorType_t motor_type)
 {
@@ -126,6 +138,11 @@ static inline MotorCtrlMode_t get_default_ctrl_mode(const MotorType_t motor_type
     case MOTOR_TYPE_VESC:
         return MOTOR_DEFAULT_MODE_VESC;
 #endif
+#ifdef USE_DM
+    case MOTOR_TYPE_DM:
+        return MOTOR_DEFAULT_MODE_DM;
+#endif
+
     default:
         return MOTOR_CTRL_EXTERNAL_PID;
     }

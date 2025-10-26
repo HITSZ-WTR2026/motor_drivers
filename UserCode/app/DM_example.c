@@ -32,8 +32,8 @@
 #include "drivers/DM.h"
 #include "interfaces/motor_if.h"
 #include "tim.h"
-#include "cmsis_os2.h"
 
+#include "dm_example.h"
 /**
  * 
  * 电机实例
@@ -51,50 +51,49 @@ Motor_PosCtrl_t pos_dm;
  * 
  */
 Motor_VelCtrl_t vel_dm;
+uint32_t prescaler = 0;
+
 
 void TIM_Callback(TIM_HandleTypeDef* htim)
 {
-    /**
-     * 将更新后控制实例的数据更新到电机实例
-     * 
-     */
-    Motor_PosCtrlUpdate(&pos_dm);
+    ++prescaler;
 
-    /**
-     * 将电机实例的数据发送给电机，达妙电机的速度环是自带的，不需要那么高的发送频率，可以不用写在定时器中断中
-     * 
-     */
-    DM_POS_CONTROL(&hcan1,1);
-}
-
-
-void update()
-{
-    int i = 0;
-    for(;;)
+     if (prescaler == 100)
     {
-        i=i+10;
-        /**
-         * 更新控制实例中的位置数据
-         * 
-         */
-        Motor_PosCtrl_SetRef(&pos_dm,-300.0f+i);
-        osDelay(1000);
+        prescaler = 0;
+        Motor_PosCtrlUpdate(&pos_dm); //位置控制函数，目前只支持定速度控制，速度为初始化电机时的VEL_MAX
+        //Motor_VelCtrlUpdate(&vel_dm);
     }
-}
 
+}
 
 
 
 void DM_Control_Init()
 {
+    /**
+     *  
+     * 初始化can滤波器
+     */
     DM_CAN_FilterInit(&hcan1,0);
 
+    /**
+     * 开启can接收回调
+     * 
+     */
     HAL_CAN_RegisterCallback(&hcan1, HAL_CAN_RX_FIFO0_MSG_PENDING_CB_ID, DJI_CAN_Fifo0ReceiveCallback);
 
+
+    /**
+     * 开启can
+     * 
+     */
     CAN_Start(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
+    
     /** 
+     * 
      * 电机初始化，位置、速度、力矩最大参数需与调试助手初始化一致
+     * 如果使用位置速度模式，需要把VEL_MAX设置成自己想要的运行速度。
      * 
      */
     DM_Init(&dm,(DM_Config_t){
@@ -103,11 +102,12 @@ void DM_Control_Init()
                     .POS_MAX    =300   ,
                     .VEL_MAX    =100   ,
                     .T_MAX      =10    ,
-                    .setvel     =10    ,
-                },&hcan1);
+                },&hcan1,DM_MODE_POS);//如果使用速度模式，最后一个参数改成 DM_MODE_VEL
+    
+    
     /**
-     * 控制实例初始化
-     * 
+     * 位置控制实例初始化
+     *
      */
     Motor_PosCtrl_Init(&pos_dm,
                         (Motor_PosCtrlConfig_t){
@@ -115,7 +115,7 @@ void DM_Control_Init()
                             .motor          = &dm,
                         });
     /**
-     * 速度实例初始化
+     * 速度控制实例初始化
      * 
      */
     Motor_VelCtrl_Init(&vel_dm,
@@ -124,11 +124,17 @@ void DM_Control_Init()
                             .motor          = &dm,
                         });
 
+    
+    
+    __MOTOR_CTRL_DISABLE(&vel_dm);
+    __MOTOR_CTRL_ENABLE(&pos_dm);
 
+
+    Motor_PosCtrl_SetRef(&pos_dm,0);
+    
     HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, TIM_Callback);
     HAL_TIM_Base_Start_IT(&htim6);
     
-    osThreadExit();
 
 }
 

@@ -73,6 +73,7 @@
 
 #ifdef USE_DM
 #include "drivers/DM.h"
+#define MOTOR_IF_INTERNAL_VEL_POS
 #endif
 
 #ifdef __cplusplus
@@ -120,6 +121,11 @@ typedef enum
 
 #if defined(USE_VESC) && !defined(MOTOR_DEFAULT_MODE_VESC)
 #define MOTOR_DEFAULT_MODE_VESC MOTOR_CTRL_INTERNAL_VEL
+#endif
+
+#if defined(USE_DM) && !defined(MOTOR_DEFAULT_MODE_DM) 
+#define MOTOR_DEFAULT_MODE_DM MOTOR_CTRL_INTERNAL_VEL_POS
+
 #endif
 
 /**
@@ -318,6 +324,11 @@ static inline void Motor_ResetAngle(const MotorType_t motor_type, void* hmotor)
 #ifdef USE_VESC
     case MOTOR_TYPE_VESC:
         VESC_ResetAngle(hmotor);
+        break;
+#endif
+#ifdef USE_DM
+    case MOTOR_TYPE_DM:
+        
         break;
 #endif
     default:;
