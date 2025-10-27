@@ -275,6 +275,7 @@ void Motor_PosCtrlUpdate(Motor_PosCtrl_t* hctrl)
     if (hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL_POS)
     {
         motor_send_internal_position(hctrl->motor_type, hctrl->motor, hctrl->position);
+        hctrl->count = 0;
         return;
     }
 #endif

@@ -40,7 +40,6 @@
  */
 DM_t dm;
 
-
 /**
  * 位置控制实例 
  */
@@ -102,8 +101,8 @@ void DM_Control_Init()
                     .POS_MAX    =300   ,
                     .VEL_MAX    =100   ,
                     .T_MAX      =10    ,
-                },&hcan1,DM_MODE_POS);//如果使用速度模式，最后一个参数改成 DM_MODE_VEL
-    
+                    .mode       =DM_MODE_POS,
+                });
     
     /**
      * 位置控制实例初始化

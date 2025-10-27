@@ -52,7 +52,7 @@ void DM_CAN_FilterInit(CAN_HandleTypeDef* hcan, const uint32_t filter_bank)
  * @param dm_config 配置初始化电机的配置实例
  * @param hcan can句柄
  */
-void DM_Init(DM_t* hdm,const DM_Config_t dm_config,CAN_HandleTypeDef* hcan,DM_MODE_T mode)
+void DM_Init(DM_t* hdm,const DM_Config_t dm_config)
 {
     static uint8_t initdata[8]={0xFF,0XFF,0XFF,0xFF,0XFF,0XFF,0XFF,0XFC};   //DM电机初始化需要发送的数据
     memset(hdm, 0, sizeof(DM_t));
@@ -61,7 +61,7 @@ void DM_Init(DM_t* hdm,const DM_Config_t dm_config,CAN_HandleTypeDef* hcan,DM_MO
     hdm->POS_MAX = dm_config.POS_MAX;
     hdm->VEL_MAX = dm_config.VEL_MAX;
     hdm->T_MAX = dm_config.T_MAX;
-    
+    hdm->mode = dm_config.mode;
     /* 注册回调 */
     DM_t** mapped_motors = NULL;
     for (int i = 0; i < map_size; i++)
@@ -87,9 +87,9 @@ void DM_Init(DM_t* hdm,const DM_Config_t dm_config,CAN_HandleTypeDef* hcan,DM_MO
     {
         mapped_motors[hdm->id - 1] = hdm;
     }
-    CAN_SendMessage(hcan,
+    CAN_SendMessage(dm_config.hcan,
                             &(CAN_TxHeaderTypeDef){
-                                .StdId = mode|hdm->id,
+                                .StdId = dm_config.mode|hdm->id,
                                 .IDE   = CAN_ID_STD,
                                 .RTR   = CAN_RTR_DATA,
                                 .DLC   = 8},
@@ -146,6 +146,7 @@ static void dm_pos_set_command_data(DM_t* hdm, const float value_vel, const floa
     data[7] = *(vbuf+3);
 
 }
+
 void DM_Vel_SendSetCmd(DM_t* hdm, const float value_vel)
 {
     static uint8_t data[8] = {0};

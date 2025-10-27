@@ -32,6 +32,7 @@ typedef struct
     float POS_MAX;
     float VEL_MAX;
     float T_MAX;
+    DM_MODE_T mode;
 }DM_t;
 
 
@@ -50,6 +51,7 @@ typedef struct
     float POS_MAX;
     float VEL_MAX;
     float T_MAX;
+    DM_MODE_T mode;
 }DM_Config_t;
 
 
@@ -59,7 +61,7 @@ typedef struct
 
 void DM_ERROR_HANDLER();
 void DM_CAN_FilterInit(CAN_HandleTypeDef* hcan, const uint32_t filter_bank);
-void DM_Init(DM_t* hdm,const DM_Config_t dm_config,CAN_HandleTypeDef* hcan,DM_MODE_T mode);
+void DM_Init(DM_t* hdm,const DM_Config_t dm_config);
 void DM_DataDecode(DM_t* hdm, const uint8_t data[8]);
 void DM_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);
 void DM_CAN_Fifo1ReceiveCallback(CAN_HandleTypeDef* hcan);
