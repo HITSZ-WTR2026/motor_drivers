@@ -114,15 +114,14 @@ void CurveMoveManagerTask(void* argument)
                     float pos_ref = Trajectory_GetPos(move->currentTime, move->targetPos - move->startPos,
                                                       move->totalTime, move->curve);
                     // 更新电机目标位置
-                    move->pid->position = move->startPos + pos_ref;
-
+                    Motor_PosCtrl_SetRef(move->pid, move->startPos + pos_ref);
                     move->currentTime += MANAGER_TASK_INTERVAL;
                 }
                 else
                 {
                     // 运动结束
-                    move->pid->position = move->targetPos; // 确保到达最终位置
-                    move->is_active     = false;           // 释放任务槽
+                    Motor_PosCtrl_SetRef(move->pid, move->targetPos); // 确保到达最终位置
+                    move->is_active = false;                          // 释放任务槽
                 }
             }
         }
