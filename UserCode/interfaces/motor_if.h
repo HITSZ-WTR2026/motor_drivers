@@ -8,8 +8,8 @@
  *   - drivers/DJI.h: 大疆电机
  *   - drivers/tb6612.h: 由 TB6612 芯片驱动的直流电机
  *   - drivers/vesc.h: VESC 电调驱动的电机
- * 
- * 
+ *
+ *
  * --------------------------------------------------------------------------
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Project repository: https://github.com/HITSZ-WTR2026/motor_drivers
- * 
- * 
+ *
+ *
  */
 #ifndef MOTOR_IF_H
 #define MOTOR_IF_H
@@ -123,8 +123,8 @@ typedef enum
 #define MOTOR_DEFAULT_MODE_VESC MOTOR_CTRL_INTERNAL_VEL
 #endif
 
-#if defined(USE_DM) && !defined(MOTOR_DEFAULT_MODE_DM) 
-#define MOTOR_DEFAULT_MODE_DM MOTOR_CTRL_INTERNAL_VEL_POS
+#if defined(USE_DM) && !defined(MOTOR_DEFAULT_MODE_DM)
+#define MOTOR_DEFAULT_MODE_DM MOTOR_CTRL_INTERNAL_VEL // 考虑到需要对舵轮实现速度位置双重控制，遂只用DM内部速度环，外部设置位置环；如果需要使用达妙位置环需要自己define
 
 #endif
 
@@ -328,7 +328,7 @@ static inline void Motor_ResetAngle(const MotorType_t motor_type, void* hmotor)
 #endif
 #ifdef USE_DM
     case MOTOR_TYPE_DM:
-        
+
         break;
 #endif
     default:;
@@ -360,7 +360,7 @@ static inline float Motor_GetVelocity(const MotorType_t motor_type, void* hmotor
 #ifdef USE_DM
     case MOTOR_TYPE_DM:
         return __DM_GET_VELOCITY(hmotor);
-#endif    
+#endif
     default:
         return 0.0f;
     }

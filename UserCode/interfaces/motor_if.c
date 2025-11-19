@@ -2,7 +2,7 @@
  * @file    motor_if.c
  * @author  syhanjin
  * @date    2025-09-04
- * 
+ *
  * *
  * Detailed description (optional).
  *
@@ -113,7 +113,7 @@ static inline void motor_send_internal_position(const MotorType_t motor_type, vo
 #endif
 #ifdef USE_DM
     case MOTOR_TYPE_DM:
-        DM_Pos_SendSetCmd(hmotor,position);
+        // DM_Pos_SendSetCmd(hmotor,position);
         return;
 #endif
     default:
@@ -292,7 +292,7 @@ void Motor_PosCtrlUpdate(Motor_PosCtrl_t* hctrl)
 #ifdef MOTOR_IF_INTERNAL_VEL
     if (hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL)
     {
-        motor_send_internal_velocity(hctrl->motor_type, hctrl->motor, hctrl->velocity_pid.output);
+        motor_send_internal_velocity(hctrl->motor_type, hctrl->motor, hctrl->position_pid.output);
         return;
     }
 #endif
@@ -312,8 +312,8 @@ void Motor_VelCtrlUpdate(Motor_VelCtrl_t* hctrl)
     if (!hctrl->enable)
         return;
 
-#ifdef MOTOR_IF_INTERNAL_VEL
-    if (hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL)
+#if defined(MOTOR_IF_INTERNAL_VEL) || defined(MOTOR_IF_INTERNAL_VEL_POS)
+    if (hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL || hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL_POS)
     {
         motor_send_internal_velocity(hctrl->motor_type, hctrl->motor, hctrl->velocity);
         return;

@@ -12,6 +12,7 @@
 .startup/
 startup_stm32*.s
 *.ld
+*.jdebug
 
 # For CLion
 CMakeLists.txt
