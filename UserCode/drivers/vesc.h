@@ -29,18 +29,17 @@
 
 #include <stdbool.h>
 
-
 #include "main.h"
 
 #ifndef VESC_CAN_NUM
-#define VESC_CAN_NUM (2)
+#    define VESC_CAN_NUM (2)
 #endif
 
 #ifndef VESC_NUM
 /**
  * VESC 电机数量
  */
-#define VESC_NUM (16)
+#    define VESC_NUM (16)
 #endif
 
 #ifndef VESC_ID_OFFSET
@@ -51,7 +50,7 @@
  *      4 * VESC_CAN_NUM * ( 1 + VESC_NUM )
  * 的内存.
  */
-#define VESC_ID_OFFSET (0)
+#    define VESC_ID_OFFSET (0)
 #endif
 
 /* 参数范围限制 */
@@ -71,8 +70,10 @@ typedef enum
     VESC_CAN_SET_RPM           = 3U, ///< 设置转速, Data: ERPM (int32)
     VESC_CAN_SET_POS           = 4U, ///< 设置位置, Data: pos * 1,000,000 (int32) unit: ?
 
-    VESC_CAN_SET_CURRENT_REL       = 10U, ///< 设置相对电流，Data: ratio (-1 to 1) * 100,000 (int32). 相对于最大值和最小值
-    VESC_CAN_SET_CURRENT_BRAKE_REL = 11U, ///< 设置相对刹车电流，Data: ratio (-1 to 1) * 100,100 (int32). 相对于最大值和最小值
+    VESC_CAN_SET_CURRENT_REL = 10U, ///< 设置相对电流，Data: ratio (-1 to 1) * 100,000 (int32).
+                                    ///< 相对于最大值和最小值
+    VESC_CAN_SET_CURRENT_BRAKE_REL = 11U, ///< 设置相对刹车电流，Data: ratio (-1 to 1) * 100,100
+                                          ///< (int32). 相对于最大值和最小值
 } VESC_CAN_PocketSet_t;
 
 typedef enum
@@ -82,16 +83,20 @@ typedef enum
      * current limits, command 22 sets the operating current limits and sends
      * them to EEPROM
      */
-    VESC_CAN_CONF_CURRENT_LIMITS       = 21U, ///< 设置电流限制, Data: Max Current Limit * 1000 (int32), Min Current Limit * 1000 (int32)
-    VESC_CAN_CONF_STORE_CURRENT_LIMITS = 22U, ///< 设置电流限制, Data: Max Current Limit * 1000 (int32), Min Current Limit * 1000 (int32)
+    VESC_CAN_CONF_CURRENT_LIMITS = 21U, ///< 设置电流限制, Data: Max Current Limit * 1000 (int32),
+                                        ///< Min Current Limit * 1000 (int32)
+    VESC_CAN_CONF_STORE_CURRENT_LIMITS = 22U, ///< 设置电流限制, Data: Max Current Limit * 1000
+                                              ///< (int32), Min Current Limit * 1000 (int32)
 
     /**
      * There are two versions of this command, command 23 sets the operating
      * current limits, command 24 sets the operating current limits and sends
      * them to EEPROM
      */
-    VESC_CAN_CONF_CURRENT_LIMITS_IN       = 23U, ///< 设置输入电流限制, Data: Max Current Limit * 1000 (int32), Min Current Limit * 1000 (int32)
-    VESC_CAN_CONF_STORE_CURRENT_LIMITS_IN = 24U, ///< 设置输入电流限制, Data: Max Current Limit * 1000 (int32), Min Current Limit * 1000 (int32)
+    VESC_CAN_CONF_CURRENT_LIMITS_IN = 23U, ///< 设置输入电流限制, Data: Max Current Limit * 1000
+                                           ///< (int32), Min Current Limit * 1000 (int32)
+    VESC_CAN_CONF_STORE_CURRENT_LIMITS_IN = 24U, ///< 设置输入电流限制, Data: Max Current Limit *
+                                                 ///< 1000 (int32), Min Current Limit * 1000 (int32)
 } VESC_CAN_PocketConf_t;
 
 typedef enum
@@ -122,22 +127,23 @@ typedef enum
     /**
      * Status Message 1
      * Data 6 ~ 7: Duty Cycle * 1000 (int16) - latest duty cycle (-1 to 1) multiplied by 1000
-     * Data 4 ~ 5: Toal Current * 10 (int16) - Current in all units summed together with a scale factor of 10 - assumed amps
-     * Data 0 ~ 3: ERPM (int32) - 32 bits probably because int16 is +/- 32k which may be less than needed for some high speed motors
+     * Data 4 ~ 5: Toal Current * 10 (int16) - Current in all units summed together with a scale
+     * factor of 10 - assumed amps Data 0 ~ 3: ERPM (int32) - 32 bits probably because int16 is +/-
+     * 32k which may be less than needed for some high speed motors
      */
     VESC_CAN_STATUS = 9U,
 
     /**
      * Status Message 2
-     * Data 4 ~ 7: Amp Hours Charged * 10000 (int32) - total regenerative amp hours put back in battery
-     * Data 0 ~ 3: Amp Hours * 10000 (int32) - total amp hours consumed by unit
+     * Data 4 ~ 7: Amp Hours Charged * 10000 (int32) - total regenerative amp hours put back in
+     * battery Data 0 ~ 3: Amp Hours * 10000 (int32) - total amp hours consumed by unit
      */
     VESC_CAN_STATUS_2 = 14U,
 
     /**
      * Status Message 3
-     * Data 4 ~ 7: watt_hours_charged * 10000 (int32) - total regenerative watt-hours put back in battery
-     * Data 0 ~ 3: watt_hours * 10000 (int32) - total watt-hours consumed by unit
+     * Data 4 ~ 7: watt_hours_charged * 10000 (int32) - total regenerative watt-hours put back in
+     * battery Data 0 ~ 3: watt_hours * 10000 (int32) - total watt-hours consumed by unit
      */
     VESC_CAN_STATUS_3 = 15U,
 
@@ -159,16 +165,15 @@ typedef enum
     VESC_CAN_STATUS_5 = 27U,
 } VESC_CAN_PocketStatus_t;
 
-
 typedef struct
 {
     bool enable;    // 是否启用
     bool auto_zero; // 是否自动判断零点
 
     CAN_HandleTypeDef* hcan;
-    uint8_t id;         ///< 控制器 id，0xFF 代表广播
-    uint8_t electrodes; ///< 电极数
-    float angle_zero;   ///< 零点角度
+    uint8_t            id;         ///< 控制器 id，0xFF 代表广播
+    uint8_t            electrodes; ///< 电极数
+    float              angle_zero; ///< 零点角度
 
     uint32_t feedback_count; ///< 反馈数
     struct
@@ -199,25 +204,27 @@ typedef struct
 
 typedef struct
 {
-    bool auto_zero; ///< 自动重置零点
+    bool               auto_zero; ///< 自动重置零点
     CAN_HandleTypeDef* hcan;
-    uint8_t id;         ///< 控制器 id，0xFF 代表广播
-    uint8_t electrodes; ///< 电极数
+    uint8_t            id;         ///< 控制器 id，0xFF 代表广播
+    uint8_t            electrodes; ///< 电极数
 } VESC_Config_t;
 
 typedef struct
 {
     CAN_HandleTypeDef* hcan;
-    VESC_t* motors[VESC_NUM];
+    VESC_t*            motors[VESC_NUM];
 } VESC_FeedbackMap;
 
-#define __VESC_GET_ANGLE(__VESC_HANDLE__)    (((VESC_t*)(__VESC_HANDLE__))->abs_angle)
-#define __VESC_GET_VELOCITY(__VESC_HANDLE__) (((VESC_t*)(__VESC_HANDLE__))->velocity)
+#define __VESC_GET_ANGLE(__VESC_HANDLE__)    (((VESC_t*) (__VESC_HANDLE__))->abs_angle)
+#define __VESC_GET_VELOCITY(__VESC_HANDLE__) (((VESC_t*) (__VESC_HANDLE__))->velocity)
 
-void VESC_Init(VESC_t* hvesc, VESC_Config_t config);
+void              VESC_Init(VESC_t* hvesc, VESC_Config_t config);
 HAL_StatusTypeDef VESC_CAN_FilterInit(CAN_HandleTypeDef* hcan, uint32_t filter_bank);
-void VESC_ResetAngle(VESC_t* hvesc);
-void VESC_SendSetCmd(VESC_t* hvesc, VESC_CAN_PocketSet_t pocket_id, float value);
-void VESC_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);
-void VESC_CAN_BaseReceiveCallback(CAN_HandleTypeDef* hcan, const CAN_RxHeaderTypeDef* header, const uint8_t data[]);
+void              VESC_ResetAngle(VESC_t* hvesc);
+void              VESC_SendSetCmd(VESC_t* hvesc, VESC_CAN_PocketSet_t pocket_id, float value);
+void              VESC_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);
+void              VESC_CAN_BaseReceiveCallback(CAN_HandleTypeDef*         hcan,
+                                               const CAN_RxHeaderTypeDef* header,
+                                               const uint8_t              data[]);
 #endif // VESC_H

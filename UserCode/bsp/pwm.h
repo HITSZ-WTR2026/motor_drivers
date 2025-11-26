@@ -28,12 +28,18 @@
 typedef struct
 {
     TIM_HandleTypeDef* htim;
-    uint32_t channel;
+    uint32_t           channel;
 } PWM_t;
 
-static inline void PWM_Start(PWM_t* hpwm) { HAL_TIM_PWM_Start(hpwm->htim, hpwm->channel); }
+static inline void PWM_Start(PWM_t* hpwm)
+{
+    HAL_TIM_PWM_Start(hpwm->htim, hpwm->channel);
+}
 
-static inline void PWM_Stop(PWM_t* hpwm) { HAL_TIM_PWM_Stop(hpwm->htim, hpwm->channel); }
+static inline void PWM_Stop(PWM_t* hpwm)
+{
+    HAL_TIM_PWM_Stop(hpwm->htim, hpwm->channel);
+}
 
 static inline void PWM_SetCompare(PWM_t* hpwm, const uint32_t compare)
 {

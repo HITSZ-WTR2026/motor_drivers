@@ -32,15 +32,14 @@
  */
 #ifndef DJI_H
 #define DJI_H
-#define __DJI_VERSION__       "0.1.0"
+#define __DJI_VERSION__ "0.1.0"
 
-#define DJI_ERROR_HANDLER()   Error_Handler()
+#define DJI_ERROR_HANDLER() Error_Handler()
 
-#define CAN_NUM               (2)
+#define CAN_NUM (2)
 
 #define DJI_M2006_C610_IQ_MAX (10000)
 #define DJI_M3508_C620_IQ_MAX (16384)
-
 
 #include <stdbool.h>
 #include "main.h"
@@ -66,9 +65,9 @@ typedef struct
     bool reverse;   ///< 是否反转
 
     DJI_MotorType_t motor_type; //< 电机类型
-    CAN_TypeDef* can;           //< CAN 实例
-    uint8_t id1;                //< 电调 ID (1 ~ 8)
-    float angle_zero;           //< 零点角度 (unit: degree)
+    CAN_TypeDef*    can;        //< CAN 实例
+    uint8_t         id1;        //< 电调 ID (1 ~ 8)
+    float           angle_zero; //< 零点角度 (unit: degree)
 
     float inv_reduction_rate; ///< 减速比
 
@@ -94,18 +93,18 @@ typedef struct
 
 typedef struct
 {
-    CAN_TypeDef* can; //< CAN 实例
-    DJI_t* motors[8]; //< 电机指针数组
+    CAN_TypeDef* can;       //< CAN 实例
+    DJI_t*       motors[8]; //< 电机指针数组
 } DJI_FeedbackMap;
 
 typedef struct
 {
-    bool auto_zero;
-    bool reverse; ///< 是否反转
-    DJI_MotorType_t motor_type;
+    bool               auto_zero;
+    bool               reverse; ///< 是否反转
+    DJI_MotorType_t    motor_type;
     CAN_HandleTypeDef* hcan;
-    uint8_t id1;          ///< 电机编号 1~8
-    float reduction_rate; ///< 外接减速比
+    uint8_t            id1;            ///< 电机编号 1~8
+    float              reduction_rate; ///< 外接减速比
 } DJI_Config_t;
 
 /**
@@ -113,10 +112,11 @@ typedef struct
  * @param __DJI_HANDLE__
  * @param __IQ_CMD__ 设置电流值，int16_t，最大值参考 DJI_[Type]_IQ_MAX
  */
-#define __DJI_SET_IQ_CMD(__DJI_HANDLE__, __IQ_CMD__) (((DJI_t*)(__DJI_HANDLE__))->iq_cmd = (int16_t)(__IQ_CMD__))
+#define __DJI_SET_IQ_CMD(__DJI_HANDLE__, __IQ_CMD__)                                               \
+    (((DJI_t*) (__DJI_HANDLE__))->iq_cmd = (int16_t) (__IQ_CMD__))
 
-#define __DJI_GET_ANGLE(__DJI_HANDLE__)              (((DJI_t*)(__DJI_HANDLE__))->abs_angle)
-#define __DJI_GET_VELOCITY(__DJI_HANDLE__)           (((DJI_t*)(__DJI_HANDLE__))->velocity)
+#define __DJI_GET_ANGLE(__DJI_HANDLE__)    (((DJI_t*) (__DJI_HANDLE__))->abs_angle)
+#define __DJI_GET_VELOCITY(__DJI_HANDLE__) (((DJI_t*) (__DJI_HANDLE__))->velocity)
 
 void DJI_ResetAngle(DJI_t* hdji);
 void DJI_Init(DJI_t* hdji, DJI_Config_t dji_config);
@@ -124,7 +124,9 @@ void DJI_CAN_FilterInit(CAN_HandleTypeDef* hcan, uint32_t filter_bank);
 
 void DJI_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);
 void DJI_CAN_Fifo1ReceiveCallback(CAN_HandleTypeDef* hcan);
-void DJI_CAN_BaseReceiveCallback(const CAN_HandleTypeDef* hcan, const CAN_RxHeaderTypeDef* header, uint8_t data[]);
+void DJI_CAN_BaseReceiveCallback(const CAN_HandleTypeDef*   hcan,
+                                 const CAN_RxHeaderTypeDef* header,
+                                 uint8_t                    data[]);
 
 void DJI_SendSetIqCommand(CAN_HandleTypeDef* hcan, DJI_IqSetCmdGroup_t cmd_group);
 

@@ -61,5 +61,4 @@ typedef struct
 void MotorPID_Init(MotorPID_t* hpid, MotorPID_Config_t pid_config);
 void MotorPID_Calculate(MotorPID_t* hpid);
 
-
 #endif // PID_MOTOR_H

@@ -1,13 +1,33 @@
----
-Language: Cpp
+# .clang-format
 BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++17
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+UseCRLF: false
+ContinuationIndentWidth: 8
 AccessModifierOffset: -4
-AlignConsecutiveAssignments: true
-AlignConsecutiveDeclarations: false
-AlignConsecutiveMacros: AcrossEmptyLines
+AlignAfterOpenBracket: Align
 AlignOperands: true
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignConsecutiveMacros: true
 AlignTrailingComments: true
-AlwaysBreakTemplateDeclarations: Yes
+
+BreakBeforeBraces: Allman
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+
+ColumnLimit: 100
+BinPackParameters: false
+BinPackArguments: false
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllArgumentsOnNextLine: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+Cpp11BracedListStyle: false
 BraceWrapping:
   AfterCaseLabel: true
   AfterClass: true
@@ -25,31 +45,30 @@ BraceWrapping:
   SplitEmptyFunction: true
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
-BreakBeforeBraces: Custom
+
 BreakConstructorInitializers: AfterColon
-BreakConstructorInitializersBeforeComma: false
-ColumnLimit: 0
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
-IncludeCategories:
-  - Regex: '^<.*'
-    Priority: 1
-  - Regex: '^".*'
-    Priority: 2
-  - Regex: '.*'
-    Priority: 3
-IncludeIsMainRegex: '([-_](test|unittest))?$'
-IndentCaseBlocks: true
-IndentWidth: 4
-InsertNewlineAtEOF: true
-MacroBlockBegin: ''
-MacroBlockEnd: ''
-MaxEmptyLinesToKeep: 2
-NamespaceIndentation: All
-PointerAlignment: Left
+PenaltyBreakAssignment: 50
+PenaltyBreakBeforeFirstCallParameter: 100
+PenaltyBreakString: 1000
+PenaltyBreakComment: 10
+PenaltyReturnTypeOnItsOwnLine: 200
+
+IndentPPDirectives: AfterHash
+IndentCaseLabels: false
+SpaceAfterCStyleCast: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeRangeBasedForLoopColon: true
 SpaceInEmptyParentheses: false
 SpacesInAngles: false
 SpacesInConditionalStatement: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
-TabWidth: 4
-...
+SpacesInSquareBrackets: false
+
+SortIncludes: Never
+IncludeBlocks: Preserve
+
+PointerAlignment: Left
+DerivePointerAlignment: false

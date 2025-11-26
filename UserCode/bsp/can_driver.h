@@ -32,28 +32,34 @@
 #define CAN_SEND_TIMEOUT    (10)
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 #define CAN_NUM (2)
 
-typedef void (*CAN_FifoReceiveCallback_t)(CAN_HandleTypeDef* hcan, CAN_RxHeaderTypeDef* header, uint8_t data[]);
+    typedef void (*CAN_FifoReceiveCallback_t)(CAN_HandleTypeDef*   hcan,
+                                              CAN_RxHeaderTypeDef* header,
+                                              uint8_t              data[]);
 
-typedef struct
-{
-    CAN_HandleTypeDef* hcan;
-    CAN_FifoReceiveCallback_t callbacks[28];
-} CAN_CallbackMap;
+    typedef struct
+    {
+        CAN_HandleTypeDef*        hcan;
+        CAN_FifoReceiveCallback_t callbacks[28];
+    } CAN_CallbackMap;
 
-// TODO: 增加更完善的错误返回逻辑
+    // TODO: 增加更完善的错误返回逻辑
 
+    uint32_t CAN_SendMessage(CAN_HandleTypeDef*         hcan,
+                             const CAN_TxHeaderTypeDef* header,
+                             const uint8_t              data[]);
+    void     CAN_Start(CAN_HandleTypeDef* hcan, uint32_t ActiveITs);
 
-uint32_t CAN_SendMessage(CAN_HandleTypeDef* hcan, const CAN_TxHeaderTypeDef* header, const uint8_t data[]);
-void CAN_Start(CAN_HandleTypeDef* hcan, uint32_t ActiveITs);
-
-void CAN_RegisterCallback(CAN_HandleTypeDef* hcan, uint32_t filter_match_index, CAN_FifoReceiveCallback_t callback);
-void CAN_UnregisterCallback(CAN_HandleTypeDef* hcan, uint32_t filter_match_index);
-void CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);
-void CAN_Fifo1ReceiveCallback(CAN_HandleTypeDef* hcan);
+    void CAN_RegisterCallback(CAN_HandleTypeDef*        hcan,
+                              uint32_t                  filter_match_index,
+                              CAN_FifoReceiveCallback_t callback);
+    void CAN_UnregisterCallback(CAN_HandleTypeDef* hcan, uint32_t filter_match_index);
+    void CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);
+    void CAN_Fifo1ReceiveCallback(CAN_HandleTypeDef* hcan);
 
 #ifdef __cplusplus
 }
