@@ -279,7 +279,7 @@ void DM_CAN_Fifo1ReceiveCallback(CAN_HandleTypeDef* hcan)
  */
 void DM_CAN_BaseReceiveCallback(const CAN_HandleTypeDef*   hcan,
                                 const CAN_RxHeaderTypeDef* header,
-                                uint8_t                    data[])
+                                const uint8_t              data[])
 {
     for (int i = 0; i < map_size; i++)
     {

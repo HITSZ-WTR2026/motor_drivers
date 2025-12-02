@@ -87,7 +87,7 @@ void DM_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);
 void DM_CAN_Fifo1ReceiveCallback(CAN_HandleTypeDef* hcan);
 void DM_CAN_BaseReceiveCallback(const CAN_HandleTypeDef*   hcan,
                                 const CAN_RxHeaderTypeDef* header,
-                                uint8_t                    data[]);
+                                const uint8_t              data[]);
 void DM_Vel_SendSetCmd(DM_t* hdm, const float value_vel);
 void DM_Pos_SendSetCmd(DM_t* hdm, const float value_pos);
 void DM_ResetAngle(DM_t* hdm);
