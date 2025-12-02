@@ -197,8 +197,8 @@ extern "C"
         MotorPID_Config_t pid;
     } Motor_VelCtrlConfig_t;
 
-    void Motor_PosCtrl_Init(Motor_PosCtrl_t* hctrl, Motor_PosCtrlConfig_t config);
-    void Motor_VelCtrl_Init(Motor_VelCtrl_t* hctrl, Motor_VelCtrlConfig_t config);
+    void Motor_PosCtrl_Init(Motor_PosCtrl_t* hctrl, const Motor_PosCtrlConfig_t* config);
+    void Motor_VelCtrl_Init(Motor_VelCtrl_t* hctrl, const Motor_VelCtrlConfig_t* config);
     void Motor_PosCtrlUpdate(Motor_PosCtrl_t* hctrl);
     void Motor_VelCtrlUpdate(Motor_VelCtrl_t* hctrl);
 

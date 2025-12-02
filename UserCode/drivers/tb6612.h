@@ -68,6 +68,6 @@ typedef struct
 void TB6612_SetSpeed(TB6612_t* hmotor, float speed);
 void TB6612_Enable(TB6612_t* hmotor);
 void TB6612_Disable(TB6612_t* hmotor);
-void TB6612_Init(TB6612_t* hmotor, TB6612_Config_t config);
+void TB6612_Init(TB6612_t* hmotor, const TB6612_Config_t* config);
 void TB6612_Encoder_DataDecode(TB6612_t* hmotor);
 #endif // TB6612_H

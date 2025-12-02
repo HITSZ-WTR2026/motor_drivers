@@ -119,7 +119,7 @@ typedef struct
 #define __DJI_GET_VELOCITY(__DJI_HANDLE__) (((DJI_t*) (__DJI_HANDLE__))->velocity)
 
 void DJI_ResetAngle(DJI_t* hdji);
-void DJI_Init(DJI_t* hdji, DJI_Config_t dji_config);
+void DJI_Init(DJI_t* hdji, DJI_Config_t* dji_config);
 void DJI_CAN_FilterInit(CAN_HandleTypeDef* hcan, uint32_t filter_bank);
 
 void DJI_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);

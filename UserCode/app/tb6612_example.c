@@ -29,17 +29,16 @@
  * 因为并没有配置外设，所以这里直接用一点点魔法避免保存
  * 实际使用时需要配置对应的板上外设
  */
-#define htim2          ((TIM_HandleTypeDef){})
-#define AIN1_GPIO_Port ((GPIO_TypeDef*)NULL)
+#define htim2          ((TIM_HandleTypeDef) {})
+#define AIN1_GPIO_Port ((GPIO_TypeDef*) NULL)
 #define AIN1_Pin       (0x00000000U)
-#define AIN2_GPIO_Port ((GPIO_TypeDef*)NULL)
+#define AIN2_GPIO_Port ((GPIO_TypeDef*) NULL)
 #define AIN2_Pin       (0x00000000U)
-#define htim8          ((TIM_HandleTypeDef){})
+#define htim8          ((TIM_HandleTypeDef) {})
 
-TB6612_t tb6612;
+TB6612_t        tb6612;
 Motor_VelCtrl_t vel_ctrl;
 Motor_PosCtrl_t pos_ctrl;
-
 
 void TIM_Callback(TIM_HandleTypeDef* htim)
 {
@@ -60,23 +59,24 @@ void TIM_Callback(TIM_HandleTypeDef* htim)
 
 void TB6612_Control_Init()
 {
-
     /**
      * Step0: 初始化电机，并使能电机
      *
      * 注意 (TB6612_Config_t) 不能省去，否则会编译错误
      */
-    TB6612_Init(&tb6612, (TB6612_Config_t){
-                             .encoder         = &htim2, //< 编码器使用的定时器
-                             .encoder_reverse = false,  //< 编码器反向，编码器方向与实际电机方向相反时启用
-                             .motor_reverse   = false,  //< 电机反向，希望电机实际旋转方向与设置的控制方向相反时启用
-                             .in1             = {AIN1_GPIO_Port, AIN1_Pin},
-                             .in2             = {AIN2_GPIO_Port, AIN2_Pin},
-                             .pwm             = {&htim8, TIM_CHANNEL_1},
-                             .roto_radio      = 4 * 13, //< 4 * 线数，4 倍是因为开启了双边沿计数
-                             .reduction_radio = 30,     //< 减速比
-                             .sampling_period = 0.001f, //< 采样间隔 (unit: s)
-                         });
+    TB6612_Init(&tb6612,
+                &(TB6612_Config_t) {
+                        .encoder         = &htim2, //< 编码器使用的定时器
+                        .encoder_reverse = false, //< 编码器反向，编码器方向与实际电机方向相反时启用
+                        .motor_reverse =
+                                false, //< 电机反向，希望电机实际旋转方向与设置的控制方向相反时启用
+                        .in1             = { AIN1_GPIO_Port, AIN1_Pin },
+                        .in2             = { AIN2_GPIO_Port, AIN2_Pin },
+                        .pwm             = { &htim8, TIM_CHANNEL_1 },
+                        .roto_radio      = 4 * 13, //< 4 * 线数，4 倍是因为开启了双边沿计数
+                        .reduction_radio = 30,     //< 减速比
+                        .sampling_period = 0.001f, //< 采样间隔 (unit: s)
+                });
     TB6612_Enable(&tb6612);
 
     /**
@@ -85,19 +85,19 @@ void TB6612_Control_Init()
      * 控制电机所需要的 PID 参数在该步传入
      * 注意：abs_output_max = 1，因为输出代表的是 PWM 的占空比
      */
-    Motor_VelCtrl_Init(&vel_ctrl,              //
-                       (Motor_VelCtrlConfig_t) //
-                       {.motor_type = MOTOR_TYPE_TB6612,
-                        .motor      = &tb6612,
-                        .pid        = {
-                                   .Kp             = 0.00168f,
-                                   .Ki             = 0.00052f,
-                                   .Kd             = 0.00077f,
-                                   .abs_output_max = 1,
-                        }});
+    Motor_VelCtrl_Init(&vel_ctrl,               //
+                       &(Motor_VelCtrlConfig_t) //
+                       { .motor_type = MOTOR_TYPE_TB6612,
+                         .motor      = &tb6612,
+                         .pid        = {
+                                        .Kp             = 0.00168f,
+                                        .Ki             = 0.00052f,
+                                        .Kd             = 0.00077f,
+                                        .abs_output_max = 1,
+                         } });
 
     Motor_PosCtrl_Init(&pos_ctrl,              //
-                       (Motor_PosCtrlConfig_t) //
+                       &(Motor_PosCtrlConfig_t) //
                        {
                            .motor_type   = MOTOR_TYPE_TB6612,
                            .motor        = &tb6612,
@@ -116,7 +116,6 @@ void TB6612_Control_Init()
                            .pos_vel_freq_ratio = 10,
                        });
 
-
     /**
      * Step5(可选): 启用或禁用控制实例
      *
@@ -125,7 +124,6 @@ void TB6612_Control_Init()
      */
     __MOTOR_CTRL_DISABLE(&vel_ctrl);
     __MOTOR_CTRL_ENABLE(&pos_ctrl);
-
 
     /**
      * Step6: 注册定时器回调并开启定时器

@@ -27,7 +27,6 @@
  * Project repository: https://github.com/HITSZ-WTR2026/motor_drivers
  */
 
-#include "dm_example.h"
 #include "bsp/can_driver.h"
 #include "can.h"
 #include "drivers/DM.h"
@@ -50,8 +49,7 @@ Motor_PosCtrl_t pos_dm;
  *
  */
 Motor_VelCtrl_t vel_dm;
-uint32_t prescaler = 0;
-
+uint32_t        prescaler = 0;
 
 void TIM_Callback(TIM_HandleTypeDef* htim)
 {
@@ -66,7 +64,6 @@ void TIM_Callback(TIM_HandleTypeDef* htim)
     }
 }
 
-
 void DM_Control_Init()
 {
     /**
@@ -79,8 +76,9 @@ void DM_Control_Init()
      * 开启can接收回调
      *
      */
-    HAL_CAN_RegisterCallback(&hcan1, HAL_CAN_RX_FIFO0_MSG_PENDING_CB_ID, DM_CAN_Fifo0ReceiveCallback);
-
+    HAL_CAN_RegisterCallback(&hcan1,
+                             HAL_CAN_RX_FIFO0_MSG_PENDING_CB_ID,
+                             DM_CAN_Fifo0ReceiveCallback);
 
     /**
      * 开启can
@@ -94,42 +92,40 @@ void DM_Control_Init()
      * 如果使用位置速度模式，需要把VEL_MAX设置成自己想要的运行速度。
      *
      */
-    DM_Init(&dm, (DM_Config_t){
-                     .hcan        = &hcan1,
-                     .id0         = 0,
-                     .POS_MAX_RAD = 3.1416,
-                     .VEL_MAX_RAD = 40,
-                     .T_MAX       = 10,
-                     .mode        = DM_MODE_VEL,
-                     .motor_type  = DM_S3519});
+    DM_Init(&dm,
+            &(DM_Config_t) { .hcan        = &hcan1,
+                             .id0         = 0,
+                             .POS_MAX_RAD = 3.1416,
+                             .VEL_MAX_RAD = 40,
+                             .T_MAX       = 10,
+                             .mode        = DM_MODE_VEL,
+                             .motor_type  = DM_S3519 });
 
     /**
      * 位置控制实例初始化
      *
      */
-    Motor_PosCtrl_Init(&pos_dm, (Motor_PosCtrlConfig_t){
-                                    .motor_type   = MOTOR_TYPE_DM,
-                                    .motor        = &dm,
-                                    .position_pid = (MotorPID_Config_t){
-                                        .Kp             = 0.0000f,
-                                        .Ki             = 0.0000f,
-                                        .Kd             = 0.000f,
-                                        .abs_output_max = 200,
-                                    }});
+    Motor_PosCtrl_Init(&pos_dm,
+                       &(Motor_PosCtrlConfig_t) { .motor_type   = MOTOR_TYPE_DM,
+                                                  .motor        = &dm,
+                                                  .position_pid = (MotorPID_Config_t) {
+                                                          .Kp             = 0.0000f,
+                                                          .Ki             = 0.0000f,
+                                                          .Kd             = 0.000f,
+                                                          .abs_output_max = 200,
+                                                  } });
     /**
      * 速度控制实例初始化
      *
      */
     Motor_VelCtrl_Init(&vel_dm,
-                       (Motor_VelCtrlConfig_t){
-                           .motor_type = MOTOR_TYPE_DM,
-                           .motor      = &dm,
+                       &(Motor_VelCtrlConfig_t) {
+                               .motor_type = MOTOR_TYPE_DM,
+                               .motor      = &dm,
                        });
-
 
     __MOTOR_CTRL_DISABLE(&vel_dm);
     __MOTOR_CTRL_ENABLE(&pos_dm);
-
 
     // Motor_PosCtrl_SetRef(&pos_dm,20000)
     // Motor_VelCtrl_SetRef(&vel_dm, 10);

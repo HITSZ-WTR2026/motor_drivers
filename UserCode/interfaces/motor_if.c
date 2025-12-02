@@ -27,9 +27,9 @@
 #include <string.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-
 
 /******** 🛠️⚠️ 电机扩展提醒块 ⚠️🛠️ ********
  * 新增电机时需要在 motor_if.c 中实现：
@@ -45,7 +45,9 @@ extern "C" {
  * @param hmotor 电机数据
  * @param output 电流 （或占空比）
  */
-static inline void motor_apply_output(const MotorType_t motor_type, void* hmotor, const float output)
+static inline void motor_apply_output(const MotorType_t motor_type,
+                                      void*             hmotor,
+                                      const float       output)
 {
     // ATTENTION: 此处不做输出限幅校验，输出限幅应当放在 PID 参数中
     switch (motor_type)
@@ -80,7 +82,9 @@ static inline void motor_apply_output(const MotorType_t motor_type, void* hmotor
  * @param hmotor 电机对象
  * @param speed 速度
  */
-static inline void motor_send_internal_velocity(const MotorType_t motor_type, void* hmotor, const float speed)
+static inline void motor_send_internal_velocity(const MotorType_t motor_type,
+                                                void*             hmotor,
+                                                const float       speed)
 {
     switch (motor_type)
     {
@@ -100,7 +104,9 @@ static inline void motor_send_internal_velocity(const MotorType_t motor_type, vo
     }
 }
 
-static inline void motor_send_internal_position(const MotorType_t motor_type, void* hmotor, const float position)
+static inline void motor_send_internal_position(const MotorType_t motor_type,
+                                                void*             hmotor,
+                                                const float       position)
 {
     switch (motor_type)
     {
@@ -120,7 +126,6 @@ static inline void motor_send_internal_position(const MotorType_t motor_type, vo
         break;
     }
 }
-
 
 static inline MotorCtrlMode_t get_default_ctrl_mode(const MotorType_t motor_type)
 {
@@ -151,7 +156,8 @@ static inline MotorCtrlMode_t get_default_ctrl_mode(const MotorType_t motor_type
 /**
  * 根据控制模式初始化位置控制器
  */
-static inline void motor_posctrl_mode_init(Motor_PosCtrl_t* hctrl, const Motor_PosCtrlConfig_t* config)
+static inline void motor_posctrl_mode_init(Motor_PosCtrl_t*             hctrl,
+                                           const Motor_PosCtrlConfig_t* config)
 {
     switch (hctrl->ctrl_mode)
     {
@@ -188,30 +194,30 @@ static inline void motor_posctrl_mode_init(Motor_PosCtrl_t* hctrl, const Motor_P
  * @param config 配置
  * @attention 计算函数不会对输出限幅，务必将内环输出限幅设为最大电流值
  */
-void Motor_PosCtrl_Init(Motor_PosCtrl_t* hctrl, const Motor_PosCtrlConfig_t config)
+void Motor_PosCtrl_Init(Motor_PosCtrl_t* hctrl, const Motor_PosCtrlConfig_t* config)
 {
-    hctrl->motor_type = config.motor_type;
-    hctrl->motor      = config.motor;
+    hctrl->motor_type = config->motor_type;
+    hctrl->motor      = config->motor;
 #ifdef USE_CUSTOM_CTRL_MODE
     hctrl->ctrl_mode = config.ctrl_mode;
 #else
-    hctrl->ctrl_mode = get_default_ctrl_mode(config.motor_type);
+    hctrl->ctrl_mode = get_default_ctrl_mode(config->motor_type);
 #endif
 
-    motor_posctrl_mode_init(hctrl, &config);
+    motor_posctrl_mode_init(hctrl, config);
 
-    hctrl->settle.count_max       = config.settle_count_max ? config.settle_count_max : 50;
-    hctrl->settle.error_threshold = config.error_threshold;
+    hctrl->settle.count_max       = config->settle_count_max ? config->settle_count_max : 50;
+    hctrl->settle.error_threshold = config->error_threshold;
     hctrl->settle.counter         = 0;
 
     hctrl->enable = true;
 }
 
-
 /**
  * 根据控制模式初始化速度控制器
  */
-static inline void motor_velctrl_mode_init(Motor_VelCtrl_t* hctrl, const Motor_VelCtrlConfig_t* config)
+static inline void motor_velctrl_mode_init(Motor_VelCtrl_t*             hctrl,
+                                           const Motor_VelCtrlConfig_t* config)
 {
     switch (hctrl->ctrl_mode)
     {
@@ -238,17 +244,17 @@ static inline void motor_velctrl_mode_init(Motor_VelCtrl_t* hctrl, const Motor_V
  * @param config 配置
  * @attention 计算函数不会对输出限幅，务必将输出限幅设为最大电流值
  */
-void Motor_VelCtrl_Init(Motor_VelCtrl_t* hctrl, const Motor_VelCtrlConfig_t config)
+void Motor_VelCtrl_Init(Motor_VelCtrl_t* hctrl, const Motor_VelCtrlConfig_t* config)
 {
-    hctrl->motor_type = config.motor_type;
-    hctrl->motor      = config.motor;
+    hctrl->motor_type = config->motor_type;
+    hctrl->motor      = config->motor;
 #ifdef USE_CUSTOM_CTRL_MODE
     hctrl->ctrl_mode = config.ctrl_mode;
 #else
-    hctrl->ctrl_mode = get_default_ctrl_mode(config.motor_type);
+    hctrl->ctrl_mode = get_default_ctrl_mode(config->motor_type);
 #endif
 
-    motor_velctrl_mode_init(hctrl, &config);
+    motor_velctrl_mode_init(hctrl, config);
 
     hctrl->enable = true;
 }
@@ -313,7 +319,8 @@ void Motor_VelCtrlUpdate(Motor_VelCtrl_t* hctrl)
         return;
 
 #if defined(MOTOR_IF_INTERNAL_VEL) || defined(MOTOR_IF_INTERNAL_VEL_POS)
-    if (hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL || hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL_POS)
+    if (hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL ||
+        hctrl->ctrl_mode == MOTOR_CTRL_INTERNAL_VEL_POS)
     {
         motor_send_internal_velocity(hctrl->motor_type, hctrl->motor, hctrl->velocity);
         return;

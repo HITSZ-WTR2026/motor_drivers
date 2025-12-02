@@ -21,7 +21,6 @@
  * Project repository: https://github.com/HITSZ-WTR2026/motor_drivers
  */
 
-
 #include "bsp/can_driver.h"
 #include "can.h"
 #include "drivers/DJI.h"
@@ -30,7 +29,8 @@
 
 /**
  * 这是需要控制的大疆电机实例
- * 本驱动中 *电机实例* 和 *控制实例* 是分开的，意味着你可以对同一个电机定义不同的 *控制实例* 从而实现切换控制
+ * 本驱动中 *电机实例* 和 *控制实例* 是分开的，意味着你可以对同一个电机定义不同的 *控制实例*
+ * 从而实现切换控制
  */
 DJI_t dji;
 
@@ -67,10 +67,8 @@ void TIM_Callback(TIM_HandleTypeDef* htim)
     // DJI_SendSetIqCommand(&hcan1, IQ_CMD_GROUP_5_8);
 }
 
-
 void DJI_Control_Init()
 {
-
     /**
      * Step0: 初始化 CAN 过滤器
      *
@@ -87,12 +85,16 @@ void DJI_Control_Init()
      *
      * 一般情况下我们只使用 Fifo0，因为 Fifo0 的优先度比 Fifo1 高，当然也可以两个都使用
      */
-    HAL_CAN_RegisterCallback(&hcan1, HAL_CAN_RX_FIFO0_MSG_PENDING_CB_ID, DJI_CAN_Fifo0ReceiveCallback);
-    // HAL_CAN_RegisterCallback(&hcan1, HAL_CAN_RX_FIFO1_MSG_PENDING_CB_ID, DJI_CAN_Fifo1ReceiveCallback);
+    HAL_CAN_RegisterCallback(&hcan1,
+                             HAL_CAN_RX_FIFO0_MSG_PENDING_CB_ID,
+                             DJI_CAN_Fifo0ReceiveCallback);
+    // HAL_CAN_RegisterCallback(&hcan1, HAL_CAN_RX_FIFO1_MSG_PENDING_CB_ID,
+    // DJI_CAN_Fifo1ReceiveCallback);
 
     /* Step2: 启动 CAN
      *
-     * CAN 必须在注册回调后再启用，否则回调无法正常注册，同样地，我们一般也只使用 Fifo0，亦可以两个都开
+     * CAN 必须在注册回调后再启用，否则回调无法正常注册，同样地，我们一般也只使用
+     * Fifo0，亦可以两个都开
      */
     CAN_Start(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
     // CAN_Start(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_RX_FIFO1_MSG_PENDING);
@@ -106,12 +108,13 @@ void DJI_Control_Init()
      *
      * 注意 (DJI_Config_t) 不能省去，否则会编译错误
      */
-    DJI_Init(&dji, (DJI_Config_t){
-                       .auto_zero  = false,      //< 是否在启动时自动清零角度
-                       .hcan       = &hcan1,     //< 电机挂载在的 CAN 句柄
-                       .motor_type = M3508_C620, //< 电机类型
-                       .id1        = 1,          //< 电调 ID (1~8)
-                   });
+    DJI_Init(&dji,
+             &(DJI_Config_t) {
+                     .auto_zero  = false,      //< 是否在启动时自动清零角度
+                     .hcan       = &hcan1,     //< 电机挂载在的 CAN 句柄
+                     .motor_type = M3508_C620, //< 电机类型
+                     .id1        = 1,          //< 电调 ID (1~8)
+             });
 
     /**
      * Step4: 初始化电机控制实例
@@ -122,37 +125,45 @@ void DJI_Control_Init()
      *      实际能接收的最大值
      */
     Motor_VelCtrl_Init(&vel_dji, //
-                       (Motor_VelCtrlConfig_t){
-                           .motor_type = MOTOR_TYPE_DJI, //< 电机类型
-                           .motor      = &dji,           //< 控制的电机
-                           .pid        = (MotorPID_Config_t){
-                                      .Kp             = 4.7f,                 //
-                                      .Ki             = 0.15f,                //
-                                      .Kd             = 0.15f,                //
-                                      .abs_output_max = DJI_M3508_C620_IQ_MAX //< 限幅为电流控制最大值
-                           },
+                       &(Motor_VelCtrlConfig_t) {
+                               .motor_type = MOTOR_TYPE_DJI, //< 电机类型
+                               .motor      = &dji,           //< 控制的电机
+                               .pid =
+                                       (MotorPID_Config_t) {
+                                               .Kp = 4.7f,  //
+                                               .Ki = 0.15f, //
+                                               .Kd = 0.15f, //
+                                               .abs_output_max =
+                                                       DJI_M3508_C620_IQ_MAX //<
+                                                                             // 限幅为电流控制最大值
+                                       },
                        });
     /**
      * 如之前所言：同一个电机可以有不同的控制实例，故这两个初始化都可以传入同一个电机
      */
-    Motor_PosCtrl_Init(&pos_dji, //
-                       (Motor_PosCtrlConfig_t){
-                           .motor_type   = MOTOR_TYPE_DJI, //< 电机类型
-                           .motor        = &dji,           //< 控制的电机
-                           .velocity_pid = (MotorPID_Config_t){
-                               .Kp             = 12.0f,  //<
-                               .Ki             = 0.20f,  //<
-                               .Kd             = 5.00f,  //<
-                               .abs_output_max = 8000.0f //< DJI_M3508_C620_IQ_MAX //< 限幅为电流控制最大值
-                           },
-                           .position_pid = (MotorPID_Config_t){
-                               .Kp             = 80.0f,  //<
-                               .Ki             = 1.00f,  //<
-                               .Kd             = 0.00f,  //<
-                               .abs_output_max = 2000.0f //< 限速，这是外环对内环的输出限幅
-                           },
-                           .pos_vel_freq_ratio = 1, //< 内外环频率比（外环的频率可能需要比内环低）
-                       });
+    Motor_PosCtrl_Init(
+            &pos_dji, //
+            &(Motor_PosCtrlConfig_t) {
+                    .motor_type = MOTOR_TYPE_DJI, //< 电机类型
+                    .motor      = &dji,           //< 控制的电机
+                    .velocity_pid =
+                            (MotorPID_Config_t) {
+                                    .Kp             = 12.0f,  //<
+                                    .Ki             = 0.20f,  //<
+                                    .Kd             = 5.00f,  //<
+                                    .abs_output_max = 8000.0f //< DJI_M3508_C620_IQ_MAX
+                                                              ////< 限幅为电流控制最大值
+                            },
+                    .position_pid =
+                            (MotorPID_Config_t) {
+                                    .Kp             = 80.0f,  //<
+                                    .Ki             = 1.00f,  //<
+                                    .Kd             = 0.00f,  //<
+                                    .abs_output_max = 2000.0f //< 限速，这是外环对内环的输出限幅
+                            },
+                    .pos_vel_freq_ratio = 1, //<
+                                             // 内外环频率比（外环的频率可能需要比内环低）
+            });
 
     /**
      * Step5(可选): 启用或禁用控制实例
