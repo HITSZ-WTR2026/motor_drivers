@@ -3,6 +3,7 @@ BasedOnStyle: LLVM
 Language: Cpp
 Standard: c++17
 IndentWidth: 4
+IndentExternBlock: NoIndent
 TabWidth: 4
 UseTab: Never
 UseCRLF: false
