@@ -308,6 +308,8 @@ static inline float Motor_GetAngle(const MotorType_t motor_type, void* hmotor)
     }
 }
 
+#define MotorCtrl_GetAngle(__ctrl__) (Motor_GetAngle((__ctrl__)->motor_type, (__ctrl__)->motor))
+
 static inline void Motor_ResetAngle(const MotorType_t motor_type, void* hmotor)
 {
     switch (motor_type)
@@ -335,6 +337,8 @@ static inline void Motor_ResetAngle(const MotorType_t motor_type, void* hmotor)
     default:;
     }
 }
+
+#define MotorCtrl_ResetAngle(__ctrl__) (Motor_ResetAngle((__ctrl__)->motor_type, (__ctrl__)->motor))
 
 /**
  * 获取电机转速
@@ -366,6 +370,10 @@ static inline float Motor_GetVelocity(const MotorType_t motor_type, void* hmotor
         return 0.0f;
     }
 }
+
+#define MotorCtrl_GetVelocity(__ctrl__)                                                            \
+    (Motor_GetVelocity((__ctrl__)->motor_type, (__ctrl__)->motor))
+
 #ifdef __cplusplus
 }
 #endif
