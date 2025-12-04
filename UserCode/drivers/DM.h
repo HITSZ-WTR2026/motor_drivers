@@ -30,12 +30,12 @@ typedef struct
     float    angle_zero;
     struct
     {
-        float  angle;   // 目前单圈位置信息
-        float  vel;     // 反馈速度信息
-        float  T;       // 反馈力矩信息
-        int8_t T_MOS;   // 反馈mos温度
-        int8_t T_Rotor; // 反馈电机内部线圈平均温度
-        int8_t ERR;     // 电机目前状态
+        float   angle;   // 目前单圈位置信息
+        float   vel;     // 反馈速度信息
+        float   T;       // 反馈力矩信息
+        int8_t  T_MOS;   // 反馈mos温度
+        int8_t  T_Rotor; // 反馈电机内部线圈平均温度
+        uint8_t ERR;     // 电机目前状态
 
     } feedback;
     int32_t            round_cnt;

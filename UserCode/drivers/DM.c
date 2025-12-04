@@ -6,10 +6,12 @@ static DM_FeedbackMap map[DM_CAN_NUM];
 static size_t         map_size = 0;
 
 static float reduction_rate_map[DM_MOTOR_TYPE_COUNT] = {
-    [DM_S3519] = (19.203),
+    [DM_S3519] = (19.203f),
 };
 
-static inline DM_t* getDMHandle(DM_t* motors[8], uint8_t* data, const CAN_RxHeaderTypeDef* header)
+static inline DM_t* getDMHandle(DM_t*                      motors[8],
+                                const uint8_t*             data,
+                                const CAN_RxHeaderTypeDef* header)
 {
     if (header->IDE != CAN_ID_STD)
         return NULL;
@@ -65,7 +67,7 @@ void DM_Init(DM_t* hdm, const DM_Config_t* dm_config)
     hdm->id0                = dm_config->id0;
     hdm->hcan               = dm_config->hcan;
     hdm->POS_MAX            = dm_config->POS_MAX_RAD * 180.0f / 3.1416f;
-    hdm->VEL_MAX            = dm_config->VEL_MAX_RAD / (2 * 3.1416);
+    hdm->VEL_MAX            = dm_config->VEL_MAX_RAD / (2 * 3.1416f);
     hdm->POS_MAX_RAD        = dm_config->POS_MAX_RAD;
     hdm->VEL_MAX_RAD        = dm_config->VEL_MAX_RAD;
     hdm->T_MAX              = dm_config->T_MAX;
@@ -107,25 +109,26 @@ void DM_Init(DM_t* hdm, const DM_Config_t* dm_config)
 
 /**
  * DM CAN 反馈数据解包
- * @param hdji DJI handle
+ * @param hdm DM handle
  * @param data 反馈数据
  */
 void DM_DataDecode(DM_t* hdm, const uint8_t data[8])
 {
-    float scale_angle = 2.0f * hdm->POS_MAX_RAD /
-                        65535.0f; // 读取到的浮点数是和16位位置数据成线性关系，计算k值
-    float scale_vel = 2.0f * hdm->VEL_MAX_RAD /
-                      4095.0f; // 读取到的浮点数是和12位位置数据成线性关系，计算k值
-    float scale_t = 2.0f * hdm->T_MAX / 4095.0f;
+    const float scale_angle = 2.0f * hdm->POS_MAX_RAD /
+                              65535.0f; // 读取到的浮点数是和16位位置数据成线性关系，计算k值
+    const float scale_vel = 2.0f * hdm->VEL_MAX_RAD /
+                            4095.0f; // 读取到的浮点数是和12位位置数据成线性关系，计算k值
+    const float scale_t = 2.0f * hdm->T_MAX / 4095.0f;
 
     const float feedback_angle =
-            scale_angle * (uint16_t) (data[1] << 8 | data[2]) -
+            scale_angle * (float) (uint16_t) (data[1] << 8 | data[2]) -
             hdm->POS_MAX_RAD; // 反馈位置数据，达妙3519和2520反馈的数据是减速前的
-    const float feedback_vel = scale_vel * (uint16_t) (data[3] << 4 | data[4] >> 4) -
+    const float feedback_vel = scale_vel * (float) (uint16_t) (data[3] << 4 | data[4] >> 4) -
                                hdm->VEL_MAX_RAD; // 反馈速度数据，达妙3519和2520反馈的数据是减速后的
-    const float feedback_t = scale_t * (uint16_t) ((data[4] & 0x0F) << 8 | data[5]); // 反馈力矩数据
-    const float angle      = feedback_angle * 180.0f / 3.1416f;
-    const float vel        = feedback_vel / 2.0f / 3.1416f * 60.0f;
+    const float feedback_t = scale_t *
+                             (float) (uint16_t) ((data[4] & 0x0F) << 8 | data[5]); // 反馈力矩数据
+    const float angle = feedback_angle * 180.0f / 3.1416f;
+    const float vel   = feedback_vel / 2.0f / 3.1416f * 60.0f;
 
     if (angle < -90 && hdm->feedback.angle >= 1.5708)
         hdm->round_cnt++;
@@ -135,8 +138,8 @@ void DM_DataDecode(DM_t* hdm, const uint8_t data[8])
     hdm->feedback.vel     = feedback_vel;
     hdm->feedback.angle   = feedback_angle;
     hdm->feedback.T       = feedback_t;
-    hdm->feedback.T_MOS   = data[6];
-    hdm->feedback.T_Rotor = data[7];
+    hdm->feedback.T_MOS   = (int8_t) data[6];
+    hdm->feedback.T_Rotor = (int8_t) data[7];
     hdm->feedback_count++;
     hdm->feedback.ERR = data[0] & 0x0F;
 
@@ -166,12 +169,11 @@ void DM_ResetAngle(DM_t* hdm)
 
 static void dm_vel_set_command_data(DM_t* hdm, const float value_vel, uint8_t data[])
 {
-    uint8_t* vbuf;
-    vbuf    = (uint8_t*) &value_vel;
-    data[0] = *(vbuf);
-    data[1] = *(vbuf + 1);
-    data[2] = *(vbuf + 2);
-    data[3] = *(vbuf + 3);
+    uint8_t* vbuf = (uint8_t*) &value_vel;
+    data[0]       = *(vbuf);
+    data[1]       = *(vbuf + 1);
+    data[2]       = *(vbuf + 2);
+    data[3]       = *(vbuf + 3);
 }
 
 static void dm_pos_set_command_data(DM_t*       hdm,
@@ -179,26 +181,24 @@ static void dm_pos_set_command_data(DM_t*       hdm,
                                     const float value_angle_rad,
                                     uint8_t     data[])
 {
-    uint8_t* vbuf;
-    uint8_t* pbuf;
-    vbuf    = (uint8_t*) &value_vel_rad;
-    pbuf    = (uint8_t*) &value_angle_rad;
-    data[0] = *(pbuf);
-    data[1] = *(pbuf + 1);
-    data[2] = *(pbuf + 2);
-    data[3] = *(pbuf + 3);
-    data[4] = *(vbuf);
-    data[5] = *(vbuf + 1);
-    data[6] = *(vbuf + 2);
-    data[7] = *(vbuf + 3);
+    uint8_t* vbuf = (uint8_t*) &value_vel_rad;
+    uint8_t* pbuf = (uint8_t*) &value_angle_rad;
+    data[0]       = *(pbuf);
+    data[1]       = *(pbuf + 1);
+    data[2]       = *(pbuf + 2);
+    data[3]       = *(pbuf + 3);
+    data[4]       = *(vbuf);
+    data[5]       = *(vbuf + 1);
+    data[6]       = *(vbuf + 2);
+    data[7]       = *(vbuf + 3);
 }
 
 void DM_Vel_SendSetCmd(DM_t* hdm, const float value_vel)
 {
     static uint8_t data[8] = { 0 };
 
-    float value_vel_rad = value_vel * 2 * 3.1416f /
-                          60.0f; // 达妙电机控制的即为输出轴的速度（uint:rad/s）
+    const float value_vel_rad = value_vel * 2 * 3.1416f /
+                                60.0f; // 达妙电机控制的即为输出轴的速度（uint:rad/s）
     dm_vel_set_command_data(hdm, value_vel_rad, data);
     CAN_SendMessage(hdm->hcan,
                     &(CAN_TxHeaderTypeDef) {
@@ -213,7 +213,7 @@ void DM_Vel_SendSetCmd(DM_t* hdm, const float value_vel)
 void DM_Pos_SendSetCmd(DM_t* hdm, const float value_pos)
 {
     static uint8_t data[8]       = { 0 };
-    float          value_pos_rad = value_pos * 3.1416f / 180.0f;
+    const float    value_pos_rad = value_pos * 3.1416f / 180.0f;
     dm_pos_set_command_data(hdm, hdm->VEL_MAX, value_pos_rad, data);
     CAN_SendMessage(hdm->hcan,
                     &(CAN_TxHeaderTypeDef) {
