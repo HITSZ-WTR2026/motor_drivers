@@ -97,8 +97,8 @@ void DM_Init(DM_t* hdm, const DM_Config_t* dm_config)
     {
         mapped_motors[hdm->id0] = hdm;
     }
-    CAN_SendMessage(dm_config.hcan,
-                    &(CAN_TxHeaderTypeDef) { .StdId = dm_config.mode | hdm->id0,
+    CAN_SendMessage(dm_config->hcan,
+                    &(CAN_TxHeaderTypeDef) { .StdId = dm_config->mode | hdm->id0,
                                              .IDE   = CAN_ID_STD,
                                              .RTR   = CAN_RTR_DATA,
                                              .DLC   = 8 },
