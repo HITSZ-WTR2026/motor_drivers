@@ -18,30 +18,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * Project repository: https://github.com/HITSZ-WTR2026/bsp_drivers
+ * Project repository: https://github.com/HITSZ-WTRobot/bsp_drivers
  */
 #include "can_driver.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #ifdef USE_RTOS
-#include "cmsis_os2.h"
+#    include "cmsis_os2.h"
 static osMutexId_t can_mutex = NULL;
 static osMutexId_t get_can_mutex()
 {
     if (can_mutex == NULL)
-        can_mutex = osMutexNew(&(osMutexAttr_t){.name = "can_mutex"});
+        can_mutex = osMutexNew(&(osMutexAttr_t) { .name = "can_mutex" });
     return can_mutex;
 }
 #else
-#include "cmsis_compiler.h"
+#    include "cmsis_compiler.h"
 #endif
 
-
 static CAN_CallbackMap maps[CAN_NUM];
-static size_t map_size = 0;
+static size_t          map_size = 0;
 
 static CAN_FifoReceiveCallback_t* get_callbacks(const CAN_HandleTypeDef* hcan)
 {
@@ -61,7 +61,9 @@ static CAN_FifoReceiveCallback_t* get_callbacks(const CAN_HandleTypeDef* hcan)
  * @attention 本函数大部分情况是线程安全的，少数情况（中断被中断打断）会出现不安全的情况。
  * @return mailbox, 0xFFFF 表示发送失败
  */
-uint32_t CAN_SendMessage(CAN_HandleTypeDef* hcan, const CAN_TxHeaderTypeDef* header, const uint8_t data[])
+uint32_t CAN_SendMessage(CAN_HandleTypeDef*         hcan,
+                         const CAN_TxHeaderTypeDef* header,
+                         const uint8_t              data[])
 {
     uint32_t mailbox = CAN_SEND_FAILED;
 
@@ -130,7 +132,9 @@ void CAN_Start(CAN_HandleTypeDef* hcan, const uint32_t ActiveITs)
  * @param filter_match_index 注册对应的 filter 编号
  * @param callback 回调函数指针
  */
-void CAN_RegisterCallback(CAN_HandleTypeDef* hcan, const uint32_t filter_match_index, CAN_FifoReceiveCallback_t callback)
+void CAN_RegisterCallback(CAN_HandleTypeDef*        hcan,
+                          const uint32_t            filter_match_index,
+                          CAN_FifoReceiveCallback_t callback)
 {
     CAN_FifoReceiveCallback_t* callbacks = get_callbacks(hcan);
 
@@ -141,10 +145,8 @@ void CAN_RegisterCallback(CAN_HandleTypeDef* hcan, const uint32_t filter_match_i
             CAN_ERROR_HANDLER();
             return;
         }
-        maps[map_size] = (CAN_CallbackMap){
-            .hcan      = hcan,
-            .callbacks = {NULL}};
-        callbacks = maps[map_size].callbacks;
+        maps[map_size] = (CAN_CallbackMap) { .hcan = hcan, .callbacks = { NULL } };
+        callbacks      = maps[map_size].callbacks;
         map_size++;
     }
 
@@ -174,7 +176,7 @@ void CAN_UnregisterCallback(CAN_HandleTypeDef* hcan, const uint32_t filter_match
 void CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan)
 {
     CAN_RxHeaderTypeDef header;
-    uint8_t data[8];
+    uint8_t             data[8];
     if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &header, data) != HAL_OK)
     {
         CAN_ERROR_HANDLER();
@@ -194,7 +196,7 @@ void CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan)
 void CAN_Fifo1ReceiveCallback(CAN_HandleTypeDef* hcan)
 {
     CAN_RxHeaderTypeDef header;
-    uint8_t data[8];
+    uint8_t             data[8];
     if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &header, data) != HAL_OK)
     {
         CAN_ERROR_HANDLER();
