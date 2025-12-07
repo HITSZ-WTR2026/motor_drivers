@@ -31,6 +31,11 @@
 
 #include "main.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #ifndef VESC_CAN_NUM
 #    define VESC_CAN_NUM (2)
 #endif
@@ -227,4 +232,9 @@ void              VESC_CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan);
 void              VESC_CAN_BaseReceiveCallback(CAN_HandleTypeDef*         hcan,
                                                const CAN_RxHeaderTypeDef* header,
                                                const uint8_t              data[]);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif // VESC_H

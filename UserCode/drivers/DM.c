@@ -2,6 +2,11 @@
 #include "bsp/can_driver.h"
 #include "string.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 static DM_FeedbackMap map[DM_CAN_NUM];
 static size_t         map_size = 0;
 
@@ -292,3 +297,7 @@ void DM_CAN_BaseReceiveCallback(const CAN_HandleTypeDef*   hcan,
         }
     }
 }
+
+#ifdef __cplusplus
+}
+#endif

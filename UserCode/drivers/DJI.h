@@ -34,6 +34,11 @@
 #define DJI_H
 #define __DJI_VERSION__ "0.1.0"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #define DJI_ERROR_HANDLER() Error_Handler()
 
 #define CAN_NUM (2)
@@ -129,5 +134,9 @@ void DJI_CAN_BaseReceiveCallback(const CAN_HandleTypeDef*   hcan,
                                  const uint8_t              data[]);
 
 void DJI_SendSetIqCommand(CAN_HandleTypeDef* hcan, DJI_IqSetCmdGroup_t cmd_group);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DJI_H

@@ -24,13 +24,16 @@
 #include "pid_motor.h"
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 void MotorPID_Calculate(MotorPID_t* hpid)
 {
     hpid->cur_error = hpid->ref - hpid->fdb;
-    hpid->output +=
-        hpid->Kp * (hpid->cur_error - hpid->prev_error1) +
-        hpid->Ki * hpid->cur_error +
-        hpid->Kd * (hpid->cur_error - 2 * hpid->prev_error1 + hpid->prev_error2);
+    hpid->output += hpid->Kp * (hpid->cur_error - hpid->prev_error1) + hpid->Ki * hpid->cur_error +
+                    hpid->Kd * (hpid->cur_error - 2 * hpid->prev_error1 + hpid->prev_error2);
     if (hpid->output > hpid->abs_output_max)
         hpid->output = hpid->abs_output_max;
     if (hpid->output < -hpid->abs_output_max)
@@ -51,3 +54,7 @@ void MotorPID_Init(MotorPID_t* hpid, const MotorPID_Config_t pid_config)
     hpid->Kd             = pid_config.Kd;
     hpid->abs_output_max = pid_config.abs_output_max;
 }
+
+#ifdef __cplusplus
+}
+#endif

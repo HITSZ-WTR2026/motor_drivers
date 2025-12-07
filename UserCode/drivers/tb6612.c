@@ -24,6 +24,11 @@
 #include "tb6612.h"
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /**
  * 设置速度
  * @param hmotor handle
@@ -114,3 +119,7 @@ void TB6612_Encoder_DataDecode(TB6612_t* hmotor)
     /* 清零计数 */
     __HAL_TIM_SET_COUNTER(hmotor->encoder, 0);
 }
+
+#ifdef __cplusplus
+}
+#endif

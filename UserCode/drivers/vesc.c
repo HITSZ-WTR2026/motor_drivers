@@ -27,6 +27,11 @@
 #include "bsp/can_driver.h"
 #include "main.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 static VESC_FeedbackMap map[VESC_CAN_NUM];
 static size_t           map_size = 0;
 
@@ -326,3 +331,7 @@ void VESC_CAN_BaseReceiveCallback(CAN_HandleTypeDef*         hcan,
         }
     }
 }
+
+#ifdef __cplusplus
+}
+#endif
