@@ -4,6 +4,11 @@
 #include "main.h"
 #include "stdbool.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #define MST_ID     0x114 // 反馈id，如果不喜欢这个数字可以自己改（
 #define DM_CAN_NUM (2)
 #define DM_NUM     (16) // 达妙电机数量上限
@@ -91,5 +96,9 @@ void DM_CAN_BaseReceiveCallback(const CAN_HandleTypeDef*   hcan,
 void DM_Vel_SendSetCmd(DM_t* hdm, const float value_vel);
 void DM_Pos_SendSetCmd(DM_t* hdm, const float value_pos);
 void DM_ResetAngle(DM_t* hdm);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // !DM_H
