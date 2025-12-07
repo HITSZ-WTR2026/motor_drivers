@@ -27,6 +27,11 @@
 #ifndef PID_MOTOR_H
 #define PID_MOTOR_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef struct
 {
     /* Arguments */
@@ -60,5 +65,9 @@ typedef struct
 
 void MotorPID_Init(MotorPID_t* hpid, MotorPID_Config_t pid_config);
 void MotorPID_Calculate(MotorPID_t* hpid);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // PID_MOTOR_H

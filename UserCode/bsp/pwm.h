@@ -25,6 +25,11 @@
 
 #include "main.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef struct
 {
     TIM_HandleTypeDef* htim;
@@ -56,5 +61,9 @@ static inline void PWM_SetDutyCircle(PWM_t* hpwm, const float duty_circle)
     else
         PWM_SetCompare(hpwm, __HAL_TIM_GET_AUTORELOAD(hpwm->htim) * duty_circle + 0.5);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // PWM_H

@@ -26,6 +26,11 @@
 #define TB6612_H
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #define __TB6612_VERSION__ "0.2.0"
 
 #include "bsp/gpio_driver.h"
@@ -70,4 +75,9 @@ void TB6612_Enable(TB6612_t* hmotor);
 void TB6612_Disable(TB6612_t* hmotor);
 void TB6612_Init(TB6612_t* hmotor, const TB6612_Config_t* config);
 void TB6612_Encoder_DataDecode(TB6612_t* hmotor);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif // TB6612_H

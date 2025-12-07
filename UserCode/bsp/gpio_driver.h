@@ -24,6 +24,11 @@
 #define GPIO_DRIVER_H
 #include "main.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef struct
 {
     GPIO_TypeDef* port;
@@ -49,5 +54,9 @@ static inline void GPIO_TogglePin(GPIO_t* hgpio)
 {
     HAL_GPIO_TogglePin(hgpio->port, hgpio->pin);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // GPIO_DRIVER_H
