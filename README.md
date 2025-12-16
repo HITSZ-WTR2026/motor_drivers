@@ -109,6 +109,40 @@ typedef struct
 
 其中外接减速比是指在输出轴上额外连接的减速比，大疆电机本身的减速比会在在驱动内部自动处理。
 
+> 大疆电机需要维护 CAN 配置。
+>
+> 首先初始化 CAN 滤波器配置，如果使用 CAN2，则必须启用 CAN1，且 CAN2 的滤波器编号从 14 起
+>
+> ```c
+> void DJI_CAN_FilterInit(CAN_HandleTypeDef* hcan, uint32_t filter_bank);
+> ```
+>
+> 请使用 `bsp/can_driver` 里的
+>
+> ```c
+> void CAN_RegisterCallback(CAN_HandleTypeDef*        hcan,
+>                           const uint32_t            filter_match_index,
+>                           CAN_FifoReceiveCallback_t callback)
+> ```
+>
+> 函数来注册 CAN 回调，其中 `hcan` 和 `filter_match_index` 分别为 `DJI_CAN_FilterInit` 的 `hcan` 和 `filter_bank`，
+> `callback` 为 `DJI_CAN_BaseReceiveCallback`。
+>
+> 之后使用
+>
+> ```c
+> HAL_CAN_RegisterCallback(&hcanX, HAL_CAN_RX_FIFO0_MSG_PENDING_CB_ID, CAN_Fifo0ReceiveCallback);
+> ```
+>
+> 来将 `bsp/can_driver` 的主回调函数注册为 STM32 CAN 的回调函数。
+
+另外，需要在定时器中断回调结尾发送控制指令，调用
+
+```c
+DJI_SendSetIqCommand(&hcanX, IQ_CMD_GROUP_1_4);
+DJI_SendSetIqCommand(&hcanX, IQ_CMD_GROUP_5_8);
+```
+
 请注意：一条 CAN 线上不要挂载超过 **7** 个大疆电机，挂载 6 个最佳
 
 ##### DM 达妙电机
@@ -121,7 +155,7 @@ TODO:
 
 ##### VESC 电调控制的电机
 
-VESC 具有它自己的上位机程序 vesctool，大部分配置请在上位机完成。
+VESC 具有它自己的上位机程序 vesctool，大部分配置请在上位机完成。驱动需要的配置如下：
 
 ```c
 typedef struct
