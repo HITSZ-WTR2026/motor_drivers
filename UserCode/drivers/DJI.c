@@ -66,6 +66,7 @@ void DJI_Init(DJI_t* hdji, const DJI_Config_t* dji_config)
     hdji->auto_zero          = dji_config->auto_zero;
     hdji->can                = dji_config->hcan->Instance;
     hdji->id1                = dji_config->id1;
+    hdji->motor_type         = dji_config->motor_type;
     hdji->inv_reduction_rate = 1.0f / // 取倒数将除法转为乘法加快运算速度
                                ((dji_config->reduction_rate > 0 ? dji_config->reduction_rate
                                                                 : 1.0f)        // 外接减速比
