@@ -58,7 +58,7 @@ void SCurveTraj_Axis_Update(SCurveTrajFollower_Axis_t* follower)
     // 计算总速度
     const float velocity = ff_velocity + follower->pd.output;
     // 设置电机速度
-    Motor_VelCtrl_SetRef(follower->ctrl, velocity);
+    Motor_VelCtrl_SetRef(follower->ctrl, DPS2RPM(velocity));
 }
 
 /**
@@ -146,7 +146,7 @@ void SCurveTraj_Group_Update(SCurveTrajFollower_Group_t* follower)
         // 计算总速度
         const float velocity = ff_velocity + follower->items[i].pd.output;
         // 设置电机速度
-        Motor_VelCtrl_SetRef(follower->items[i].ctrl, velocity);
+        Motor_VelCtrl_SetRef(follower->items[i].ctrl, DPS2RPM(velocity));
     }
 }
 

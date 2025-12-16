@@ -16,6 +16,12 @@ extern "C"
 #include "libs/pid_pd.h"
 #include "interfaces/motor_if.h"
 
+/**
+ * deg/s 转为 rpm
+ * @param __DEG_PER_SEC__ deg/s
+ */
+#define DPS2RPM(__DEG_PER_SEC__) ((__DEG_PER_SEC__) / 360.0f * 6.0f)
+
 typedef struct
 {
     bool running;
@@ -31,6 +37,11 @@ typedef struct
     float now;
 } SCurveTrajFollower_Axis_t;
 
+/**
+ * 单电机速度曲线规划配置
+ *
+ * @attention pd 里的 max_output 的单位是 deg/s
+ */
 typedef struct
 {
     float            update_interval; ///< 更新间隔 (s)
@@ -69,6 +80,11 @@ typedef struct
     float now;
 } SCurveTrajFollower_Group_t;
 
+/**
+ * 多电机协同速度曲线规划配置
+ *
+ * @attention pd 里的 max_output 的单位是 deg/s
+ */
 typedef struct
 {
     float update_interval; ///< 更新间隔 (s)
