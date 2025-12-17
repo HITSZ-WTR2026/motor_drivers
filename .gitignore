@@ -15,7 +15,7 @@ startup_stm32*.s
 *.jdebug
 
 # For CLion
-CMakeLists.txt
+/CMakeLists.txt
 # this is a template file, do not ignore it
 !CMakeLists_template.txt
 
