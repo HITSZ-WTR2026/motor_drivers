@@ -48,7 +48,7 @@ endif ()
 if (ENABLE_CONTROLLERS)
     file(GLOB_RECURSE CONTROLLER_SOURCES controllers/*.c)
     list(APPEND ALL_SOURCES ${CONTROLLER_SOURCES})
-    #    list(APPEND ALL_HEADERS "")
+    list(APPEND ALL_HEADERS "controllers/s_curve_traj_follower.h")
 endif ()
 
 # ---------------------------------------------------------------------------
