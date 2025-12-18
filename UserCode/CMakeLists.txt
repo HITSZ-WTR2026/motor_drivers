@@ -127,7 +127,7 @@ target_link_libraries(${LIB_NAME} PRIVATE stm32cubemx)
 
 if (ENABLE_CONTROLLERS)
     # Repo: https://github.com/HITSZ-WTRobot/s-curve-planner
-    target_link_libraries(${PROJECT_NAME} s_curve)
+    target_link_libraries(${PROJECT_NAME} PRIVATE s_curve)
     add_dependencies(${PROJECT_NAME} s_curve)
 endif ()
 
