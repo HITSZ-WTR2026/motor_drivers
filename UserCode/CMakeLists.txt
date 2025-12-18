@@ -1,6 +1,9 @@
 # UserCode/CMakeLists.txt
 cmake_minimum_required(VERSION 3.21)
-project(motor_drivers)
+
+set(LIB_NAME motor_drivers)
+
+project(${LIB_NAME})
 
 # 导库方式
 # add_subdirectory({project_path}/UserCode)
@@ -88,13 +91,16 @@ endif ()
 # ---------------------------------------------------------------------------
 # create static library
 # ---------------------------------------------------------------------------
-add_library(${PROJECT_NAME} STATIC ${ALL_SOURCES})
+add_library(motor_drivers STATIC ${ALL_SOURCES})
+if (NOT TARGET ${LIB_NAME})
+    message(FATAL_ERROR "target ${LIB_NAME} not created")
+endif ()
 
 # ---------------------------------------------------------------------------
 # compile definitions
 # ---------------------------------------------------------------------------
 if (DRIVER_MACROS)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC ${DRIVER_MACROS})
+    target_compile_definitions(${LIB_NAME} PUBLIC ${DRIVER_MACROS})
 endif ()
 
 # ---------------------------------------------------------------------------
@@ -102,7 +108,7 @@ endif ()
 # ---------------------------------------------------------------------------
 set(EXPORT_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 file(MAKE_DIRECTORY ${EXPORT_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PUBLIC ${EXPORT_INCLUDE_DIR})
+target_include_directories(${LIB_NAME} PUBLIC ${EXPORT_INCLUDE_DIR})
 
 # ---------------------------------------------------------------------------
 # copy selected headers
@@ -112,14 +118,11 @@ foreach (header IN LISTS ALL_HEADERS)
             ${EXPORT_INCLUDE_DIR}/${header} COPYONLY)
 endforeach ()
 
+
 # ---------------------------------------------------------------------------
 # declare dependencies
 # ---------------------------------------------------------------------------
-target_link_libraries(${PROJECT_NAME} PRIVATE stm32cubemx)
 add_dependencies(${PROJECT_NAME} stm32cubemx)
+target_link_libraries(${PROJECT_NAME} PRIVATE stm32cubemx)
 
-if (ENABLE_CONTROLLERS)
-    # Repo: https://github.com/HITSZ-WTRobot/s-curve-planner
-    target_link_libraries(${PROJECT_NAME} PRIVATE s_curve)
-    add_dependencies(${PROJECT_NAME} s_curve)
-endif ()
+target_link_libraries(${PROJECT_NAME} PRIVATE m)
