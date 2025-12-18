@@ -19,9 +19,9 @@ endif ()
 # ---------------------------------------------------------------------------
 # layer options
 # ---------------------------------------------------------------------------
-option(ENABLE_BSP "enable BSP layer" ON)
-option(ENABLE_LIBS "enable LIBS layer" ON)
-option(ENABLE_CONTROLLERS "enable CONTROLLERS layer" ON)
+option(MotorIF_UseBSP "use bsp layer" ON)
+option(MotorIF_UseLibs "use library (pid_motor, pid_pd)" ON)
+option(MotorIF_UseControllers "use s-curve-traj (depend on `s_curve`)" ON)
 
 # ---------------------------------------------------------------------------
 # collect layer sources
@@ -30,7 +30,7 @@ set(ALL_SOURCES interfaces/motor_if.c)
 
 set(ALL_HEADERS "interfaces/motor_if.h")
 
-if (ENABLE_BSP)
+if (MotorIF_UseBSP)
     file(GLOB_RECURSE BSP_SOURCES bsp/*.c)
     list(APPEND ALL_SOURCES ${BSP_SOURCES})
     list(APPEND ALL_HEADERS
@@ -40,7 +40,7 @@ if (ENABLE_BSP)
     )
 endif ()
 
-if (ENABLE_LIBS)
+if (MotorIF_UseLibs)
     file(GLOB_RECURSE LIB_SOURCES libs/*.c)
     list(APPEND ALL_SOURCES ${LIB_SOURCES})
     list(APPEND ALL_HEADERS
@@ -49,7 +49,7 @@ if (ENABLE_LIBS)
     )
 endif ()
 
-if (ENABLE_CONTROLLERS)
+if (MotorIF_UseControllers)
     file(GLOB_RECURSE CONTROLLER_SOURCES controllers/*.c)
     list(APPEND ALL_SOURCES ${CONTROLLER_SOURCES})
     list(APPEND ALL_HEADERS "controllers/s_curve_traj_follower.h")
@@ -60,29 +60,29 @@ endif ()
 # ---------------------------------------------------------------------------
 set(DRIVER_MACROS "")
 
-option(ENABLE_DJI_DRIVER "enable DJI driver" ON)
-if (ENABLE_DJI_DRIVER)
+option(MotorIF_UseDJI "enable DJI driver" ON)
+if (MotorIF_UseDJI)
     list(APPEND ALL_SOURCES drivers/DJI.c)
     list(APPEND ALL_HEADERS "drivers/DJI.h")
     list(APPEND DRIVER_MACROS USE_DJI)
 endif ()
 
-option(ENABLE_TB6612_DRIVER "enable TB6612 driver" OFF)
-if (ENABLE_TB6612_DRIVER)
+option(MotorIF_UseTB6612 "enable TB6612 driver" OFF)
+if (MotorIF_UseTB6612)
     list(APPEND ALL_SOURCES drivers/tb6612.c)
     list(APPEND ALL_HEADERS "drivers/tb6612.h")
     list(APPEND DRIVER_MACROS USE_TB6612)
 endif ()
 
-option(ENABLE_VESC_DRIVER "enable VESC driver" OFF)
-if (ENABLE_VESC_DRIVER)
+option(MotorIF_UseVESC "enable VESC driver" OFF)
+if (MotorIF_UseVESC)
     list(APPEND ALL_SOURCES drivers/vesc.c)
     list(APPEND ALL_HEADERS "drivers/vesc.h")
     list(APPEND DRIVER_MACROS USE_VESC)
 endif ()
 
-option(ENABLE_DM_DRIVER "enable DM driver" OFF)
-if (ENABLE_DM_DRIVER)
+option(MotorIF_UseDM "enable DM driver" OFF)
+if (MotorIF_UseDM)
     list(APPEND ALL_SOURCES drivers/DM.c)
     list(APPEND ALL_HEADERS "drivers/DM.h")
     list(APPEND DRIVER_MACROS USE_DM)
