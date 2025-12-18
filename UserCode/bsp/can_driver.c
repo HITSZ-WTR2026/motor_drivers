@@ -68,8 +68,8 @@ uint32_t CAN_SendMessage(CAN_HandleTypeDef*         hcan,
     uint32_t mailbox = CAN_SEND_FAILED;
 
     // 等待上一个发送完成
-    // while (HAL_CAN_GetTxMailboxesFreeLevel(hcan) == 0)
-    //     ;
+    while (HAL_CAN_GetTxMailboxesFreeLevel(hcan) == 0)
+        ;
     if (__get_IPSR() != 0)
     {
         // 在中断中直接调用
