@@ -80,6 +80,8 @@ set(USER_LIBRARIES "")
 
 # e.g.
 #add_subdirectory(library/motor_drivers/UserCode)
+add_subdirectory(Modules/s-curve-planner)
+list(APPEND USER_LIBRARIES s_curve)
 
 # =======================================================
 

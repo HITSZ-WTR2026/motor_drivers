@@ -1,0 +1,3 @@
+[submodule "Modules/s-curve-planner"]
+	path = Modules/s-curve-planner
+	url = git@github.com:HITSZ-WTRobot/s-curve-planner.git
