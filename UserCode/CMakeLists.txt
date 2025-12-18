@@ -43,7 +43,6 @@ if (ENABLE_LIBS)
     list(APPEND ALL_HEADERS
             "libs/pid_motor.h"
             "libs/pid_pd.h"
-            "libs/s_curve.h"
     )
 endif ()
 
