@@ -73,27 +73,19 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Remove wrong libob.a library dependency when using cpp files
 list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
-
-set(USER_LIBRARIES "")
 # Add dependence from library
 # ===================== DEPENDENCIES =====================
 
 # e.g.
 #add_subdirectory(library/motor_drivers/UserCode)
 add_subdirectory(Modules/s-curve-planner)
-list(APPEND USER_LIBRARIES s_curve)
 
 # =======================================================
-
-# every library will depend on stm32cubemx
-foreach (LIBRARY IN LISTS USER_LIBRARIES)
-    target_link_libraries(${LIBRARY} PRIVATE stm32cubemx)
-endforeach ()
 
 # Add linked libraries
 target_link_libraries(${CMAKE_PROJECT_NAME}
         stm32cubemx
 
         # Add user defined libraries
-        ${USER_LIBRARIES}
+        s_curve
 )
