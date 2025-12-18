@@ -23,7 +23,7 @@ option(ENABLE_CONTROLLERS "enable CONTROLLERS layer" ON)
 # ---------------------------------------------------------------------------
 # collect layer sources
 # ---------------------------------------------------------------------------
-set(ALL_SOURCES "")
+set(ALL_SOURCES interfaces/motor_if.c)
 
 set(ALL_HEADERS "interfaces/motor_if.h")
 
