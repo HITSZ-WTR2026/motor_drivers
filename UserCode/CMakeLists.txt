@@ -112,3 +112,13 @@ foreach (header IN LISTS ALL_HEADERS)
     configure_file(${CMAKE_CURRENT_LIST_DIR}/${header}
             ${EXPORT_INCLUDE_DIR}/${header} COPYONLY)
 endforeach ()
+
+# ---------------------------------------------------------------------------
+# declare dependencies
+# ---------------------------------------------------------------------------
+add_dependencies(${PROJECT_NAME} stm32cubemx)
+
+if (ENABLE_CONTROLLERS)
+    # Repo: https://github.com/HITSZ-WTRobot/s-curve-planner
+    add_dependencies(${PROJECT_NAME} s_curve)
+endif ()
