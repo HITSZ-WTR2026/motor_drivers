@@ -47,6 +47,7 @@ void SCurveTraj_Axis_Update(SCurveTrajFollower_Axis_t* follower)
         return;
 
     const float now = follower->now + follower->update_interval;
+    follower->now   = now;
     // 计算速度前馈量
     const float ff_velocity = SCurve_CalcV(&follower->s, now);
     // 计算当前目标位置
@@ -133,6 +134,7 @@ void SCurveTraj_Group_Update(SCurveTrajFollower_Group_t* follower)
         return;
 
     const float now = follower->now + follower->update_interval;
+    follower->now   = now;
     // 计算速度前馈量
     const float ff_velocity = SCurve_CalcV(&follower->s, now);
     // 计算当前目标位置
