@@ -125,10 +125,10 @@ endforeach ()
 add_dependencies(${LIB_NAME} stm32cubemx)
 target_link_libraries(${LIB_NAME} PRIVATE stm32cubemx)
 
-if (ENABLE_CONTROLLERS)
+if (MotorIF_UseControllers)
     # Repo: https://github.com/HITSZ-WTRobot/s-curve-planner
-    target_link_libraries(${PROJECT_NAME} PRIVATE s_curve)
-    add_dependencies(${PROJECT_NAME} s_curve)
+    target_link_libraries(${LIB_NAME} PRIVATE s_curve)
+    add_dependencies(${LIB_NAME} s_curve)
 endif ()
 
 target_link_libraries(${LIB_NAME} PRIVATE m)
