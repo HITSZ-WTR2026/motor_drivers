@@ -37,9 +37,9 @@ extern "C"
 #endif
 #define CAN_NUM (2)
 
-typedef void (*CAN_FifoReceiveCallback_t)(CAN_HandleTypeDef*   hcan,
-                                          CAN_RxHeaderTypeDef* header,
-                                          const uint8_t        data[]);
+typedef void (*CAN_FifoReceiveCallback_t)(const CAN_HandleTypeDef*   hcan,
+                                          const CAN_RxHeaderTypeDef* header,
+                                          const uint8_t              data[]);
 
 typedef struct
 {
