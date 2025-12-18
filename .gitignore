@@ -14,11 +14,6 @@ startup_stm32*.s
 *.ld
 *.jdebug
 
-# For CLion
-/CMakeLists.txt
-# this is a template file, do not ignore it
-!CMakeLists_template.txt
-
 # CubeMX metadata
 .settings/
 .ioc.xml
@@ -60,8 +55,6 @@ Release/
 # .vscode/
 # .idea/
 # .clangd
-.eide*
-!.eide/
 
 ### System files ###
 .DS_Store
