@@ -122,7 +122,7 @@ endforeach ()
 # ---------------------------------------------------------------------------
 # declare dependencies
 # ---------------------------------------------------------------------------
-add_dependencies(${PROJECT_NAME} stm32cubemx)
-target_link_libraries(${PROJECT_NAME} PRIVATE stm32cubemx)
+add_dependencies(${LIB_NAME} stm32cubemx)
+target_link_libraries(${LIB_NAME} PRIVATE stm32cubemx)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE m)
+target_link_libraries(${LIB_NAME} PRIVATE m)
