@@ -40,7 +40,7 @@ TB6612_t        tb6612;
 Motor_VelCtrl_t vel_ctrl;
 Motor_PosCtrl_t pos_ctrl;
 
-void TIM_Callback(TIM_HandleTypeDef* htim)
+void TB_TIM_Callback(TIM_HandleTypeDef* htim)
 {
     /**
      * 处理编码器数据
@@ -131,6 +131,6 @@ void TB6612_Control_Init()
      * 需要在 STM32CubeMX -> `Project Manager` -> `Advanced Settings`
      *  -> `Register Callback` 中启用 TIM 回调
      */
-    HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, TIM_Callback);
+    HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, TB_TIM_Callback);
     HAL_TIM_Base_Start_IT(&htim6);
 }

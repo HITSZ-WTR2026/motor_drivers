@@ -85,9 +85,8 @@ void DJI_Control_Init()
      *
      * 一般情况下我们只使用 Fifo0，因为 Fifo0 的优先度比 Fifo1 高，当然也可以两个都使用
      */
-    HAL_CAN_RegisterCallback(&hcan1,
-                             HAL_CAN_RX_FIFO0_MSG_PENDING_CB_ID,
-                             DJI_CAN_Fifo0ReceiveCallback);
+    CAN_RegisterCallback(&hcan1, DJI_CAN_BaseReceiveCallback);
+    HAL_CAN_RegisterCallback(&hcan1, HAL_CAN_RX_FIFO0_MSG_PENDING_CB_ID, CAN_Fifo0ReceiveCallback);
     // HAL_CAN_RegisterCallback(&hcan1, HAL_CAN_RX_FIFO1_MSG_PENDING_CB_ID,
     // DJI_CAN_Fifo1ReceiveCallback);
 
@@ -130,12 +129,11 @@ void DJI_Control_Init()
                                .motor      = &dji,           //< 控制的电机
                                .pid =
                                        (MotorPID_Config_t) {
-                                               .Kp = 4.7f,  //
-                                               .Ki = 0.15f, //
-                                               .Kd = 0.15f, //
-                                               .abs_output_max =
-                                                       DJI_M3508_C620_IQ_MAX //<
-                                                                             // 限幅为电流控制最大值
+                                               .Kp             = 4.7f,   //
+                                               .Ki             = 0.15f,  //
+                                               .Kd             = 0.15f,  //
+                                               .abs_output_max = 8000.0f // DJI_M3508_C620_IQ_MAX
+                                                                         // 不建议开到限幅最大值
                                        },
                        });
     /**
@@ -152,7 +150,7 @@ void DJI_Control_Init()
                                     .Ki             = 0.20f,  //<
                                     .Kd             = 5.00f,  //<
                                     .abs_output_max = 8000.0f //< DJI_M3508_C620_IQ_MAX
-                                                              ////< 限幅为电流控制最大值
+                                                              //< 不建议开到限幅最大值
                             },
                     .position_pid =
                             (MotorPID_Config_t) {

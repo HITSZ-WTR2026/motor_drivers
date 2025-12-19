@@ -39,15 +39,21 @@ static osMutexId_t get_can_mutex()
 #else
 #    include "cmsis_compiler.h"
 #endif
+typedef struct
+{
+    CAN_HandleTypeDef*        hcan;
+    CAN_FifoReceiveCallback_t callbacks[CAN_MAX_CALLBACK_NUM];
+    uint32_t                  callback_count;
+} CAN_CallbackMap;
 
 static CAN_CallbackMap maps[CAN_NUM];
 static size_t          map_size = 0;
 
-static CAN_FifoReceiveCallback_t* get_callbacks(const CAN_HandleTypeDef* hcan)
+static CAN_CallbackMap* get_map(const CAN_HandleTypeDef* hcan)
 {
     for (size_t i = 0; i < map_size; i++)
         if (maps[i].hcan == hcan)
-            return maps[i].callbacks;
+            return &maps[i];
 
     return NULL;
 }
@@ -127,32 +133,30 @@ void CAN_Start(CAN_HandleTypeDef* hcan, const uint32_t ActiveITs)
  * 注册 CAN Fifo 处理回调
  *
  * @attention 本函数非线程安全，调用时请注意
- * @note 重复注册将会覆盖之前的回调
  * @param hcan hcan
- * @param filter_match_index 注册对应的 filter 编号
  * @param callback 回调函数指针
  */
-void CAN_RegisterCallback(CAN_HandleTypeDef*        hcan,
-                          const uint32_t            filter_match_index,
-                          CAN_FifoReceiveCallback_t callback)
+void CAN_RegisterCallback(CAN_HandleTypeDef* hcan, const CAN_FifoReceiveCallback_t callback)
 {
-    CAN_FifoReceiveCallback_t* callbacks = get_callbacks(hcan);
+    CAN_CallbackMap* map = get_map(hcan);
 
-    if (callbacks == NULL)
+    if (map == NULL)
     {
         if (map_size >= CAN_NUM)
         {
             CAN_ERROR_HANDLER();
             return;
         }
-        maps[map_size] = (CAN_CallbackMap) { .hcan = hcan, .callbacks = { NULL } };
-        callbacks      = maps[map_size].callbacks;
+        maps[map_size] =
+                (CAN_CallbackMap) { .hcan = hcan, .callbacks = { NULL }, .callback_count = 0 };
+        map = &maps[map_size];
         map_size++;
     }
-
-    callbacks[filter_match_index] = callback;
+    if (map->callback_count < CAN_MAX_CALLBACK_NUM)
+        map->callbacks[map->callback_count++] = callback;
+    else
+        CAN_ERROR_HANDLER();
 }
-
 /**
  * 取消注册 CAN Fifo 处理回调
  *
@@ -160,12 +164,12 @@ void CAN_RegisterCallback(CAN_HandleTypeDef*        hcan,
  * @param hcan can handle
  * @param filter_match_index 需要取消注册对应的过滤器对应的 id
  */
-void CAN_UnregisterCallback(CAN_HandleTypeDef* hcan, const uint32_t filter_match_index)
-{
-    CAN_FifoReceiveCallback_t* callbacks = get_callbacks(hcan);
-    if (callbacks != NULL)
-        callbacks[filter_match_index] = NULL;
-}
+// void CAN_UnregisterCallback(CAN_HandleTypeDef* hcan, const uint32_t filter_match_index)
+// {
+//     CAN_FifoReceiveCallback_t* callbacks = get_callbacks(hcan);
+//     if (callbacks != NULL)
+//         callbacks[filter_match_index] = NULL;
+// }
 
 /**
  * CAN Fifo0 接收处理函数
@@ -182,11 +186,11 @@ void CAN_Fifo0ReceiveCallback(CAN_HandleTypeDef* hcan)
         CAN_ERROR_HANDLER();
         return;
     }
-    const CAN_FifoReceiveCallback_t* callbacks = get_callbacks(hcan);
-    if (callbacks != NULL && callbacks[header.FilterMatchIndex] != NULL)
-        callbacks[header.FilterMatchIndex](hcan, &header, data);
+    const CAN_CallbackMap* map = get_map(hcan);
+    if (map != NULL)
+        for (size_t i = 0; i < map->callback_count; i++)
+            map->callbacks[i](hcan, &header, data);
 }
-
 /**
  * CAN Fifo1 接收处理函数
  *
@@ -202,9 +206,10 @@ void CAN_Fifo1ReceiveCallback(CAN_HandleTypeDef* hcan)
         CAN_ERROR_HANDLER();
         return;
     }
-    const CAN_FifoReceiveCallback_t* callbacks = get_callbacks(hcan);
-    if (callbacks != NULL && callbacks[header.FilterMatchIndex] != NULL)
-        callbacks[header.FilterMatchIndex](hcan, &header, data);
+    const CAN_CallbackMap* map = get_map(hcan);
+    if (map != NULL)
+        for (size_t i = 0; i < map->callback_count; i++)
+            map->callbacks[i](hcan, &header, data);
 }
 
 #ifdef __cplusplus
