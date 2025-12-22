@@ -37,32 +37,32 @@ VESC_t vesc;
 /**
  * 速度环控制实例
  */
-Motor_VelCtrl_t vel_ctrl;
+Motor_VelCtrl_t vesc_vel_ctrl;
 
 /**
  * 位置环控制实例
  */
-Motor_PosCtrl_t pos_ctrl;
+Motor_PosCtrl_t vesc_pos_ctrl;
 
-uint32_t prescaler = 0;
+uint32_t vesc_prescaler = 0;
 
 /**
  * 定时器回调函数，用于定时进行 PID 计算和 CAN 指令发送
  * @note freq 1000Hz
  * @param htim unused
  */
-void TIM_Callback(TIM_HandleTypeDef* htim)
+void VESC_TIM_Callback(TIM_HandleTypeDef* htim)
 {
-    ++prescaler;
-    if (prescaler == 100)
+    ++vesc_prescaler;
+    if (vesc_prescaler == 100)
     {
-        prescaler = 0;
+        vesc_prescaler = 0;
         /**
          * 控制状态更新，不小于 5Hz
          */
-        Motor_VelCtrlUpdate(&vel_ctrl);
+        Motor_VelCtrlUpdate(&vesc_vel_ctrl);
     }
-    Motor_PosCtrlUpdate(&pos_ctrl);
+    Motor_PosCtrlUpdate(&vesc_pos_ctrl);
 }
 
 void VESC_Control_Init()
@@ -115,12 +115,12 @@ void VESC_Control_Init()
      * VESC 的速度环由其本身完成，位置环由于多圈控制问题，由驱动完成，所以速度环控制不需要 PID
      * 参数， 位置环控制只需要第三环参数。
      */
-    Motor_VelCtrl_Init(&vel_ctrl,
+    Motor_VelCtrl_Init(&vesc_vel_ctrl,
                        &(Motor_VelCtrlConfig_t) {
                                .motor_type = MOTOR_TYPE_VESC,
                                .motor      = &vesc,
                        });
-    Motor_PosCtrl_Init(&pos_ctrl,
+    Motor_PosCtrl_Init(&vesc_pos_ctrl,
                        &(Motor_PosCtrlConfig_t) { .motor_type   = MOTOR_TYPE_VESC,
                                                   .motor        = &vesc,
                                                   .position_pid = (MotorPID_Config_t) {
@@ -136,8 +136,8 @@ void VESC_Control_Init()
      * 控制实例在初始化时默认是启动的，所以大部分情况此步可以省略。
      * 但是在有多个控制实例的情况下，必须仅保持一个控制实例开启
      */
-    __MOTOR_CTRL_DISABLE(&vel_ctrl);
-    __MOTOR_CTRL_ENABLE(&pos_ctrl);
+    __MOTOR_CTRL_DISABLE(&vesc_vel_ctrl);
+    __MOTOR_CTRL_ENABLE(&vesc_pos_ctrl);
 
     /**
      * Step6: 注册定时器回调并开启定时器
@@ -145,6 +145,6 @@ void VESC_Control_Init()
      * 需要在 STM32CubeMX -> `Project Manager` -> `Advanced Settings`
      *  -> `Register Callback` 中启用 TIM 回调
      */
-    HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, TIM_Callback);
+    HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, VESC_TIM_Callback);
     HAL_TIM_Base_Start_IT(&htim6);
 }

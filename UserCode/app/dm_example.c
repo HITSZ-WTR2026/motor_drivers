@@ -51,7 +51,7 @@ Motor_PosCtrl_t pos_dm;
 Motor_VelCtrl_t vel_dm;
 uint32_t        prescaler = 0;
 
-void TIM_Callback(TIM_HandleTypeDef* htim)
+void DM_TIM_Callback(TIM_HandleTypeDef* htim)
 {
     ++prescaler;
     Motor_PosCtrlUpdate(&pos_dm); // 位置控制函数，目前只支持定速度控制，速度为初始化电机时的VEL_MAX
@@ -130,6 +130,6 @@ void DM_Control_Init()
     // Motor_PosCtrl_SetRef(&pos_dm,20000)
     // Motor_VelCtrl_SetRef(&vel_dm, 10);
 
-    HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, TIM_Callback);
+    HAL_TIM_RegisterCallback(&htim6, HAL_TIM_PERIOD_ELAPSED_CB_ID, DM_TIM_Callback);
     HAL_TIM_Base_Start_IT(&htim6);
 }
