@@ -53,10 +53,10 @@
  * 6. 实现 Motor_GetVelocity
  ****************************************/
 
-#define USE_DJI
-#define USE_TB6612
-#define USE_VESC
-#define USE_DM
+// #define USE_DJI
+// #define USE_TB6612
+// #define USE_VESC
+// #define USE_DM
 
 #ifdef USE_DJI
 #    include "drivers/DJI.h"

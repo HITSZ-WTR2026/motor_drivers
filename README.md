@@ -38,6 +38,31 @@ UserCode/
 
 ### 用法
 
+可以通过 submodule 功能将本仓库引用到你自己的项目（需要是 STM32CubeMX 的 CMake 工具链），具体操作为
+
+```shell
+git submodule add git@github.com:HITSZ-WTRobot/motor_drivers.git Modules/motor_drivers
+```
+
+然后在项目的 CMakeLists.txt 里添加 subdirectory，并将模块添加到项目
+
+```cmake
+set(ENABLE_BSP ON) # 启用 bsp
+set(ENABLE_LIBS ON) # 启用 lib
+set(ENABLE_CONTROLLERS ON) # 启用 controller
+
+set(ENABLE_DJI_DRIVER ON)
+set(ENABLE_TB6612_DRIVER OFF)
+set(ENABLE_VESC_DRIVER OFF)
+set(ENABLE_DM_DRIVER OFF)
+
+add_subdirectory(Modules/motor_drivers/UserCode)
+
+target_link_libraries(motor_drivers PRIVATE stm32cubemx)
+
+target_link_libraries(${PROJECT_NAME}.elf PRIVATE motor_drivers)
+```
+
 #### motor_if
 
 1. 参考下一节定义 *电机对象* 并初始化

@@ -1,32 +1,9 @@
-### STM32CubeMX ###
-# CubeMX auto-generated sources
-/Core/
-/Drivers/
-/Middlewares/
-/USB_Device/
-/FATFS/
-/LWIP/
-/MX/
-/TouchGFX/
-/Utilities/
-.startup/
-startup_stm32*.s
-*.ld
-*.jdebug
-
-# For CLion
-CMakeLists.txt
-# this is a template file, do not ignore it
-!CMakeLists_template.txt
-
-# CubeMX metadata
-.settings/
-.ioc.xml
-*.ioc.bak
-.mxproject
-.mxresources
+# generated on 2025-12-18 17:10:52
+### Auto-generated files ###
+# auto-generated files by ide
 
 ### Build artifacts ###
+# CMake build outputs, object files, binaries
 cmake-*
 build/
 Debug/
@@ -39,30 +16,47 @@ Release/
 *.map
 *.lst
 *.srec
+.clangd
 
-### IDE files ###
-# STM32CubeIDE / Eclipse
-.project
-.cproject
-.launch
-.externalToolBuilders/
-
-# Keil uVision
-*.uvprojx
-*.uvoptx
-
-# IAR Embedded Workbench
+### IDE and Editor files ###
+# IDE projects, editor configs, plugins
+# section: eide
+.eide*
+# section: iar
 *.eww
 *.ewd
 *.ewp
+# section: keil
+*.uvprojx
+*.uvoptx
+# section: vscode
+.vscode/
+# section: clion
+.idea/
 
-# VSCode / CLion
-# .vscode/
-# .idea/
-# .clangd
-.eide*
-!.eide/
+### STM32CubeMX ###
+# CubeMX auto-generated sources and metadata
+/Core/
+/Drivers/
+/Middlewares/
+/USB_Device/
+/FATFS/
+/LWIP/
+/MX/
+/TouchGFX/
+/Utilities/
+.startup/
+startup_stm32*.s
+*.ld
+.settings/
+.ioc.xml
+*.ioc.bak
+.mxproject
+.mxresources
+.project
+.cproject
 
 ### System files ###
+# OS-specific system files
 .DS_Store
 Thumbs.db
