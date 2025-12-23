@@ -75,7 +75,7 @@ typedef struct
     float    j_max; ///< 最大加加速度
 
     SCurveTrajFollower_GroupItem_t* items;
-    float                           item_count;
+    size_t                          item_count;
 
     float now;
 } SCurveTrajFollower_Group_t;
@@ -91,7 +91,7 @@ typedef struct
 
     SCurveTrajFollower_GroupItem_Config_t* item_configs;
     SCurveTrajFollower_GroupItem_t*        items;
-    float                                  item_count;
+    size_t                                 item_count;
 
     float v_max; ///< 最大速度
     float a_max; ///< 最大加速度
@@ -112,12 +112,16 @@ void SCurveTraj_Axis_Update(SCurveTrajFollower_Axis_t* follower);
 
 SCurve_Result_t SCurveTraj_Axis_SetTarget(SCurveTrajFollower_Axis_t* follower, float target);
 
+float SCurveTraj_Axis_EstimateDuration(const SCurveTrajFollower_Axis_t* follower, float target);
+
 void SCurveTraj_Group_Init(SCurveTrajFollower_Group_t*             follower,
                            const SCurveTrajFollower_GroupConfig_t* config);
 
 void SCurveTraj_Group_Update(SCurveTrajFollower_Group_t* follower);
 
 SCurve_Result_t SCurveTraj_Group_SetTarget(SCurveTrajFollower_Group_t* follower, float target);
+
+float SCurveTraj_Group_EstimateDuration(const SCurveTrajFollower_Group_t* follower, float target);
 
 #ifdef __cplusplus
 }

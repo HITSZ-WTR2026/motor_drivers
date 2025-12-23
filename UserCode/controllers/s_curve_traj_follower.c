@@ -62,6 +62,23 @@ void SCurveTraj_Axis_Update(SCurveTrajFollower_Axis_t* follower)
     Motor_VelCtrl_SetRef(follower->ctrl, DPS2RPM(velocity));
 }
 
+// 辅助函数
+static SCurve_Result_t axis_s_curve_init(SCurve_t*                        s,
+                                         const SCurveTrajFollower_Axis_t* follower,
+                                         const bool                       running,
+                                         const float                      target)
+{
+    return SCurve_Init(s,
+                       MotorCtrl_GetAngle(follower->ctrl),    // 从当前位置起始,
+                       target,                                // 到目标位置
+                       MotorCtrl_GetVelocity(follower->ctrl), // 保证速度连续
+                       running ? SCurve_CalcA(&follower->s, follower->now)
+                               : 0, // 尽量保证加速度也连续,
+                       follower->v_max,
+                       follower->a_max,
+                       follower->j_max);
+}
+
 /**
  * 设置目标位置
  * @param follower
@@ -70,26 +87,36 @@ void SCurveTraj_Axis_Update(SCurveTrajFollower_Axis_t* follower)
  */
 SCurve_Result_t SCurveTraj_Axis_SetTarget(SCurveTrajFollower_Axis_t* follower, const float target)
 {
-    const float running = follower->running;
+    const bool running = follower->running;
 
     follower->running = false;
 
-    const SCurve_Result_t r = SCurve_Init(&follower->s,
-                                          MotorCtrl_GetAngle(follower->ctrl),    // 从当前位置起始,
-                                          target,                                // 到目标位置
-                                          MotorCtrl_GetVelocity(follower->ctrl), // 保证速度连续
-                                          running ? SCurve_CalcA(&follower->s, follower->now)
-                                                  : 0, // 尽量保证加速度也连续,
-                                          follower->v_max,
-                                          follower->a_max,
-                                          follower->j_max);
-    follower->now           = 0;
+    const SCurve_Result_t r = axis_s_curve_init(&follower->s, follower, running, target);
+
+    follower->now = 0;
     if (r == S_CURVE_SUCCESS)
         follower->running = true;
     else
         follower->running = running;
 
     return r;
+}
+
+/**
+ * 计算预计需要的时间
+ * @param follower
+ * @param target 目标角度
+ * @return 预计需要的时间
+ */
+float SCurveTraj_Axis_EstimateDuration(const SCurveTrajFollower_Axis_t* follower,
+                                       const float                      target)
+{
+    // 临时规划器
+    SCurve_t              temps;
+    const SCurve_Result_t r = axis_s_curve_init(&temps, follower, follower->running, target);
+    if (r != S_CURVE_SUCCESS)
+        return -1.0f;
+    return temps.total_time;
 }
 
 /**
@@ -152,18 +179,11 @@ void SCurveTraj_Group_Update(SCurveTrajFollower_Group_t* follower)
     }
 }
 
-/**
- * 设置目标位置
- * @param follower
- * @param target 目标角度
- * @return 是否规划成功
- */
-SCurve_Result_t SCurveTraj_Group_SetTarget(SCurveTrajFollower_Group_t* follower, const float target)
+static SCurve_Result_t group_s_curve_init(SCurve_t*                         s,
+                                          const SCurveTrajFollower_Group_t* follower,
+                                          const bool                        running,
+                                          const float                       target)
 {
-    const float running = follower->running;
-
-    follower->running = false;
-
     float start_position = 0, start_velocity = 0;
 
     for (size_t i = 0; i < follower->item_count; i++)
@@ -172,25 +192,58 @@ SCurve_Result_t SCurveTraj_Group_SetTarget(SCurveTrajFollower_Group_t* follower,
         start_position += MotorCtrl_GetAngle(follower->items[i].ctrl);
         start_velocity += MotorCtrl_GetVelocity(follower->items[i].ctrl);
     }
-    start_position /= follower->item_count;
-    start_velocity /= follower->item_count;
+    start_position /= (float) follower->item_count;
+    start_velocity /= (float) follower->item_count;
 
-    const SCurve_Result_t r = SCurve_Init(&follower->s,
-                                          start_position,
-                                          target,         // 到目标位置
-                                          start_velocity, // 保证速度连续
-                                          running ? SCurve_CalcA(&follower->s, follower->now)
-                                                  : 0, // 尽量保证加速度也连续,
-                                          follower->v_max,
-                                          follower->a_max,
-                                          follower->j_max);
-    follower->now           = 0;
+    return SCurve_Init(s,
+                       start_position,
+                       target,         // 到目标位置
+                       start_velocity, // 保证速度连续
+                       running ? SCurve_CalcA(&follower->s, follower->now)
+                               : 0, // 尽量保证加速度也连续,
+                       follower->v_max,
+                       follower->a_max,
+                       follower->j_max);
+}
+
+/**
+ * 设置目标位置
+ * @param follower
+ * @param target 目标角度
+ * @return 是否规划成功
+ */
+SCurve_Result_t SCurveTraj_Group_SetTarget(SCurveTrajFollower_Group_t* follower, const float target)
+{
+    const bool running = follower->running;
+
+    follower->running       = false;
+    const SCurve_Result_t r = group_s_curve_init(&follower->s, follower, running, target);
+
+    follower->now = 0;
     if (r == S_CURVE_SUCCESS)
         follower->running = true;
     else
         follower->running = running;
 
     return r;
+}
+
+/**
+ * 计算预计需要的时间
+ * @param follower
+ * @param target 目标角度
+ * @return 预计需要的时间
+ */
+float SCurveTraj_Group_EstimateDuration(const SCurveTrajFollower_Group_t* follower,
+                                        const float                       target)
+{
+    // 临时规划器
+    SCurve_t              temps;
+    const SCurve_Result_t r = group_s_curve_init(&temps, follower, follower->running, target);
+
+    if (r != S_CURVE_SUCCESS)
+        return -1.0f;
+    return temps.total_time;
 }
 
 #ifdef __cplusplus
