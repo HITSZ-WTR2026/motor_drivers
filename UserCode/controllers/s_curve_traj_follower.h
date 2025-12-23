@@ -103,7 +103,7 @@ typedef struct
  * @param __follower__ follower
  */
 #define SCurveTraj_isFinished(__follower__)                                                        \
-    ((follower)->running && (follower)->now >= (follower)->s.total_time)
+    ((__follower__)->running && (__follower__)->now >= (__follower__)->s.total_time)
 
 void SCurveTraj_Axis_Init(SCurveTrajFollower_Axis_t*             follower,
                           const SCurveTrajFollower_AxisConfig_t* config);
