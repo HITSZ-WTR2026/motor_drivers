@@ -20,7 +20,7 @@ extern "C"
  * deg/s 转为 rpm
  * @param __DEG_PER_SEC__ deg/s
  */
-#define DPS2RPM(__DEG_PER_SEC__) ((__DEG_PER_SEC__) / 360.0f * 6.0f)
+#define DPS2RPM(__DEG_PER_SEC__) ((__DEG_PER_SEC__) / 360.0f * 60.0f)
 
 typedef struct
 {
