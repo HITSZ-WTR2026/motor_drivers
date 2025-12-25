@@ -35,6 +35,10 @@ typedef struct
     float            j_max; ///< 最大加加速度
 
     float now;
+
+#ifdef DEBUG
+    float current_target; ///< 曲线当前目标位置
+#endif
 } SCurveTrajFollower_Axis_t;
 
 /**
@@ -78,6 +82,10 @@ typedef struct
     size_t                          item_count;
 
     float now;
+
+#ifdef DEBUG
+    float current_target; ///< 曲线当前目标位置
+#endif
 } SCurveTrajFollower_Group_t;
 
 /**
