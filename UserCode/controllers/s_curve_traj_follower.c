@@ -32,6 +32,10 @@ void SCurveTraj_Axis_Init(SCurveTrajFollower_Axis_t*             follower,
 
     follower->now     = 0.0f;
     follower->running = false;
+
+#ifdef DEBUG
+    follower->current_target = 0.0f;
+#endif
 }
 
 /**
@@ -58,6 +62,9 @@ void SCurveTraj_Axis_Update(SCurveTrajFollower_Axis_t* follower)
     PD_Calculate(&follower->pd);
     // 计算总速度
     const float velocity = ff_velocity + follower->pd.output;
+#ifdef DEBUG
+    follower->current_target = target;
+#endif
     // 设置电机速度
     Motor_VelCtrl_SetRef(follower->ctrl, DPS2RPM(velocity));
 }
@@ -146,6 +153,10 @@ void SCurveTraj_Group_Init(SCurveTrajFollower_Group_t*             follower,
 
     follower->now     = 0.0f;
     follower->running = false;
+
+#ifdef DEBUG
+    follower->current_target = 0.0f;
+#endif
 }
 
 /**
@@ -166,6 +177,9 @@ void SCurveTraj_Group_Update(SCurveTrajFollower_Group_t* follower)
     const float ff_velocity = SCurve_CalcV(&follower->s, now);
     // 计算当前目标位置
     const float target = SCurve_CalcX(&follower->s, now);
+#ifdef DEBUG
+    follower->current_target = target;
+#endif
     // 计算 PD 输出
     for (size_t i = 0; i < follower->item_count; i++)
     {
