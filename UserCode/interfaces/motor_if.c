@@ -210,7 +210,7 @@ void Motor_PosCtrl_Init(Motor_PosCtrl_t* hctrl, const Motor_PosCtrlConfig_t* con
     hctrl->settle.error_threshold = config->error_threshold;
     hctrl->settle.counter         = 0;
 
-    hctrl->enable = true;
+    hctrl->enable = false;
 }
 
 /**
@@ -256,7 +256,7 @@ void Motor_VelCtrl_Init(Motor_VelCtrl_t* hctrl, const Motor_VelCtrlConfig_t* con
 
     motor_velctrl_mode_init(hctrl, config);
 
-    hctrl->enable = true;
+    hctrl->enable = false;
 }
 
 /**
