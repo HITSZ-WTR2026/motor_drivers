@@ -13,7 +13,7 @@ extern "C"
 #endif
 
 #include "libs/s_curve.h"
-#include "libs/pid_pd.h"
+#include "libs/mit_pd.h"
 #include "interfaces/motor_if.h"
 
 /**
@@ -28,7 +28,7 @@ typedef struct
 
     float            update_interval; ///< 更新间隔
     SCurve_t         s;
-    PD_t             pd;
+    MIT_PD_t         pd;
     Motor_VelCtrl_t* ctrl;
     float            v_max; ///< 最大速度
     float            a_max; ///< 最大加速度
@@ -49,7 +49,7 @@ typedef struct
 typedef struct
 {
     float            update_interval; ///< 更新间隔 (s)
-    PD_Config_t      error_pd;        ///< 位置误差PD控制器参数
+    MIT_PD_Config_t  error_pd;        ///< 位置误差PD控制器参数
     Motor_VelCtrl_t* motor_vel_ctrl;  ///< 电机控制对象
     float            v_max;           ///< 最大速度
     float            a_max;           ///< 最大加速度
@@ -59,13 +59,13 @@ typedef struct
 typedef struct
 {
     Motor_VelCtrl_t* ctrl;
-    PD_t             pd;
+    MIT_PD_t         pd;
 } SCurveTrajFollower_GroupItem_t;
 
 typedef struct
 {
     Motor_VelCtrl_t* ctrl;
-    PD_Config_t      error_pd;
+    MIT_PD_Config_t  error_pd;
 } SCurveTrajFollower_GroupItem_Config_t;
 
 typedef struct
