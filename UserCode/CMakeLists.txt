@@ -46,6 +46,7 @@ if (MotorIF_UseLibs)
     list(APPEND ALL_HEADERS
             "libs/pid_motor.h"
             "libs/pid_pd.h"
+            "libs/mit_pd.h"
     )
 endif ()
 
