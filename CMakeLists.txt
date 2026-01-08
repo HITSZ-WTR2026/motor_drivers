@@ -80,6 +80,8 @@ list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
 #add_subdirectory(library/motor_drivers/UserCode)
 add_subdirectory(Modules/s-curve-planner)
 
+add_subdirectory(Modules/C_Library)
+
 # =======================================================
 
 # Add linked libraries
@@ -88,4 +90,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
         # Add user defined libraries
         s_curve
+        libs_pid_motor
+        libs_pid_pd
 )
