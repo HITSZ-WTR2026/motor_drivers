@@ -20,7 +20,6 @@ endif ()
 # layer options
 # ---------------------------------------------------------------------------
 option(MotorIF_UseBSP "use bsp layer" ON)
-option(MotorIF_UseLibs "use library (pid_motor, pid_pd)" ON)
 option(MotorIF_UseControllers "use s-curve-traj (depend on `s_curve`)" ON)
 
 # ---------------------------------------------------------------------------
@@ -37,15 +36,6 @@ if (MotorIF_UseBSP)
             "bsp/can_driver.h"
             "bsp/gpio_driver.h"
             "bsp/pwm.h"
-    )
-endif ()
-
-if (MotorIF_UseLibs)
-    file(GLOB_RECURSE LIB_SOURCES libs/*.c)
-    list(APPEND ALL_SOURCES ${LIB_SOURCES})
-    list(APPEND ALL_HEADERS
-            "libs/pid_motor.h"
-            "libs/pid_pd.h"
     )
 endif ()
 
