@@ -77,7 +77,8 @@ typedef struct
     float inv_reduction_rate; ///< 减速比
 
     /* Feedback */
-    uint32_t feedback_count; //< 接收到的反馈数据数量
+    uint32_t feedback_snacks; ///< 每次发送控制指令 feed--, 接收到控制指令 feed = 10
+    uint32_t feedback_count;  //< 接收到的反馈数据数量
     struct
     {
         float mech_angle; //< 单圈机械角度 (unit: degree)
@@ -134,6 +135,11 @@ void DJI_CAN_BaseReceiveCallback(const CAN_HandleTypeDef*   hcan,
                                  const uint8_t              data[]);
 
 void DJI_SendSetIqCommand(CAN_HandleTypeDef* hcan, DJI_IqSetCmdGroup_t cmd_group);
+
+static bool DJI_isConnected(const DJI_t* hdji)
+{
+    return hdji->feedback_snacks > 0;
+}
 
 #ifdef __cplusplus
 }
