@@ -62,7 +62,8 @@ static inline DJI_t* getDJIHandle(DJI_t* motors[8], const CAN_RxHeaderTypeDef* h
         return NULL;
     if (motors[id0] == NULL)
     {
-        DJI_ERROR_HANDLER();
+        // 我是傻逼，我之前在这里干什么？？？？？？？？
+        // DJI_ERROR_HANDLER();
         return NULL;
     }
     return motors[id0];
